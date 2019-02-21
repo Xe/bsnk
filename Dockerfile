@@ -1,6 +1,8 @@
 FROM xena/go:1.11.5 AS build
 
 ENV GOPROXY=https://cache.greedo.xeserv.us
+WORKDIR /bsnk
+COPY . .
 RUN GOBIN=/ go install
 
 FROM xena/alpine

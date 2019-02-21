@@ -118,10 +118,10 @@ func Move(res http.ResponseWriter, req *http.Request) {
 			"goal":      goalStr,
 		},
 		logCoords("goal", goal.Coord),
-		logCoords("left", me.left()),
-		logCoords("right", me.right()),
-		logCoords("up", me.up()),
-		logCoords("down", me.down()),
+		logCoords("left", me.left().(Cell).Coord),
+		logCoords("right", me.right().(Cell).Coord),
+		logCoords("up", me.up().(Cell).Coord),
+		logCoords("down", me.down().(Cell).Coord),
 	)
 
 	respond(res, api.MoveResponse{

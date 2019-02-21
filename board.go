@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/Xe/bsnk/api"
-	astar "github.com/beefsack/go-astar"
 )
 
 type Board struct {
@@ -118,39 +117,42 @@ func (c Cell) neighbor(relX, relY int) Cell {
 	return c.ref.makeCell(c.Coord.X+relX, c.Coord.Y+relY)
 }
 
-func (c Cell) up() astar.Pather {
+func (c Cell) up() Cell {
 	return c.neighbor(0, 1)
 }
 
-func (c Cell) down() astar.Pather {
+func (c Cell) down() Cell {
 	return c.neighbor(0, -1)
 }
 
-func (c Cell) left() astar.Pather {
+func (c Cell) left() Cell {
 	return c.neighbor(-1, 0)
 }
 
-func (c Cell) right() astar.Pather {
+func (c Cell) right() Cell {
 	return c.neighbor(1, 0)
 }
 
-func (c Cell) PathNeighbors() []astar.Pather {
-	return []astar.Pather{
-		c.up(), c.down(), c.left(), c.right(),
+func (c Cell) PathNeighbors() []Cell {
+	var result []Cell
+	for _, side := range []Cell{c.up(), c.down(), c.left(), c.right()} {
+		if pathNeighborCost(side) != doNotMove {
+			result = append(result, side)
+		}
 	}
+
+	return result
 }
 
 // pathfinding cost hacking
 const (
-	doNotMove = 999999
-	getThis   = 5
+	doNotMove = 99999
+	getThis   = 500
 	normal    = 100
 )
 
-func (c Cell) PathNeighborCost(to astar.Pather) float64 {
-	toc := to.(Cell)
-
-	switch toc.Contents {
+func pathNeighborCost(to Cell) float64 {
+	switch to.Contents {
 	case Food:
 		return getThis
 	case None:
@@ -160,15 +162,13 @@ func (c Cell) PathNeighborCost(to astar.Pather) float64 {
 	return doNotMove
 }
 
-func (c Cell) PathEstimatedCost(to astar.Pather) float64 {
-	toc := to.(Cell)
-
-	absX := toc.Coord.X - c.Coord.X
+func (c Cell) PathEstimatedCost(to Cell) float64 {
+	absX := to.Coord.X - c.Coord.X
 	if absX < 0 {
 		absX = -absX
 	}
 
-	absY := toc.Coord.Y - c.Coord.Y
+	absY := to.Coord.Y - c.Coord.Y
 	if absY < 0 {
 		absY = -absY
 	}

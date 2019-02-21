@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/Xe/bsnk/api"
-	astar "github.com/beefsack/go-astar"
 	"github.com/facebookgo/flagenv"
+	"github.com/kr/pretty"
 	"within.website/ln"
 	"within.website/ln/ex"
 	"within.website/ln/opname"
@@ -82,23 +83,29 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 	b := MakeBoard(&decoded)
 	me := b.GetSelfHead()
+
+	if me.left().Coord.X < me.Coord.X {
+		pretty.Println(decoded)
+		panic(nil)
+	}
+
 	var target Cell
-	var targetCost float64
+	var targetCost float64 = 99999
 	var goalStr = "nothing"
 	var goal Cell
 
 	for _, fd := range b.GetFoods() {
-		path, distance, found := astar.Path(me, fd)
-		if !found {
-			// can't get to this food
-			continue
-		}
+		distance := me.PathEstimatedCost(fd)
 
 		if distance < targetCost {
-			target = path[0].(Cell)
-			targetCost = distance
-			goalStr = "food"
-			goal = fd
+			for _, side := range []Cell{me.up(), me.down(), me.left(), me.right()} {
+				if side.PathEstimatedCost(fd) < distance {
+					target = side
+					targetCost = distance
+					goalStr = "food"
+					goal = fd
+				}
+			}
 		}
 	}
 
@@ -118,10 +125,10 @@ func Move(res http.ResponseWriter, req *http.Request) {
 			"goal":      goalStr,
 		},
 		logCoords("goal", goal.Coord),
-		logCoords("left", me.left().(Cell).Coord),
-		logCoords("right", me.right().(Cell).Coord),
-		logCoords("up", me.up().(Cell).Coord),
-		logCoords("down", me.down().(Cell).Coord),
+		logCoords("left", me.left().Coord),
+		logCoords("right", me.right().Coord),
+		logCoords("up", me.up().Coord),
+		logCoords("down", me.down().Coord),
 	)
 
 	respond(res, api.MoveResponse{
@@ -131,8 +138,7 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 func logCoords(pfx string, coord api.Coord) ln.F {
 	return ln.F{
-		pfx + "_x": coord.X,
-		pfx + "_y": coord.Y,
+		pfx + "_x,y": fmt.Sprintf("(%d,%d)", coord.X, coord.Y),
 	}
 }
 

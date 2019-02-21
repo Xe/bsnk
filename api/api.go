@@ -1,5 +1,10 @@
 package api
 
+import (
+	"encoding/json"
+	"net/http"
+)
+
 type Coord struct {
 	X int `json:"x"`
 	Y int `json:"y"`
@@ -36,4 +41,9 @@ type StartResponse struct {
 
 type MoveResponse struct {
 	Move string `json:"move"`
+}
+
+func DecodeSnakeRequest(req *http.Request, decoded *SnakeRequest) error {
+	err := json.NewDecoder(req.Body).Decode(&decoded)
+	return err
 }

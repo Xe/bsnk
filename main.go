@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
@@ -12,6 +13,12 @@ import (
 	"within.website/ln/ex"
 	"within.website/ln/opname"
 )
+
+func respond(res http.ResponseWriter, obj interface{}) {
+	res.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(res).Encode(obj)
+	res.Write([]byte("\n"))
+}
 
 func index(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)

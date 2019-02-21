@@ -56,6 +56,15 @@ func Start(res http.ResponseWriter, req *http.Request) {
 		log.Printf("Bad start request: %v", err)
 	}
 
+	ctx = opname.With(req.Context(), "game-start")
+	ln.Log(ctx, ln.F{
+		"game_id": decoded.Game.ID,
+		"turn": decoded.Turn,
+		"board_y": decoded.Board.Height,
+		"board_x": decoded.Board.Width,
+		"my_health": decoded.You.Health,
+	})
+
 	respond(res, api.StartResponse{
 		Color: *color,
 	})
@@ -68,8 +77,20 @@ func Move(res http.ResponseWriter, req *http.Request) {
 		log.Printf("Bad move request: %v", err)
 	}
 
+	var pickDir = "down"
+
+	ctx = opname.With(req.Context(), "make-move")
+	ln.Log(ctx, ln.F{
+		"game_id": decoded.Game.ID,
+		"turn": decoded.Turn,
+		"board_y": decoded.Board.Height,
+		"board_x": decoded.Board.Width,
+		"my_health": decoded.You.Health,
+		"picking": pickDir,
+	})
+
 	respond(res, api.MoveResponse{
-		Move: "down",
+		Move: pickDir,
 	})
 }
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Xe/bsnk/api"
-	"github.com/beefsack/go-astar"
+	astar "github.com/beefsack/go-astar"
 )
 
 type Board struct {
@@ -13,14 +13,14 @@ type Board struct {
 func MakeBoard(sr *api.SnakeRequest) *Board {
 	return &Board{
 		Board: sr.Board,
-		Self: sr.You,
+		Self:  sr.You,
 	}
 }
 
 func (b *Board) GetFoods() []Cell {
 	var result []Cell
 
-	for _, fd := range b.Food{
+	for _, fd := range b.Food {
 		result = append(result, b.makeCell(fd.X, fd.Y))
 	}
 
@@ -115,7 +115,7 @@ type Cell struct {
 }
 
 func (c Cell) neighbor(relX, relY int) Cell {
-	return c.ref.makeCell(c.Coord.X + relX, c.Coord.Y + relY)
+	return c.ref.makeCell(c.Coord.X+relX, c.Coord.Y+relY)
 }
 
 func (c Cell) up() astar.Pather {
@@ -141,10 +141,10 @@ func (c Cell) PathNeighbors() []astar.Pather {
 }
 
 // pathfinding cost hacking
-const(
+const (
 	doNotMove = 999999
-	getThis = 5
-	normal = 100
+	getThis   = 5
+	normal    = 100
 )
 
 func (c Cell) PathNeighborCost(to astar.Pather) float64 {
@@ -172,7 +172,6 @@ func (c Cell) PathEstimatedCost(to astar.Pather) float64 {
 	if absY < 0 {
 		absY = -absY
 	}
-
 
 	return float64(absX + absY)
 }

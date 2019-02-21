@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/Xe/bsnk/api"
-	"github.com/beefsack/go-astar"
+	astar "github.com/beefsack/go-astar"
 	"github.com/facebookgo/flagenv"
 	"within.website/ln"
 	"within.website/ln/ex"
@@ -82,8 +82,10 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 	b := MakeBoard(&decoded)
 	me := b.GetSelfHead()
-	var target api.Coord
+	var target Cell
 	var targetCost float64
+	var goalStr = "nothing"
+	var goal Cell
 
 	for _, fd := range b.GetFoods() {
 		path, distance, found := astar.Path(me, fd)
@@ -93,28 +95,45 @@ func Move(res http.ResponseWriter, req *http.Request) {
 		}
 
 		if distance < targetCost {
-			target = path[0].(Cell).Coord
+			target = path[0].(Cell)
 			targetCost = distance
+			goalStr = "food"
+			goal = fd
 		}
 	}
 
-	pickDir = me.Coord.Dir(target)
+	pickDir = me.Coord.Dir(target.Coord)
 
 	ctx := opname.With(req.Context(), "make-move")
-	ln.Log(ctx, ln.F{
-		"game_id":   decoded.Game.ID,
-		"turn":      decoded.Turn,
-		"board_y":   decoded.Board.Height,
-		"board_x":   decoded.Board.Width,
-		"my_health": decoded.You.Health,
-		"my_head_x": decoded.You.Body[0].X,
-		"my_head_y": decoded.You.Body[0].Y,
-		"picking":   pickDir,
-	})
+	ln.Log(ctx,
+		ln.F{
+			"game_id":   decoded.Game.ID,
+			"turn":      decoded.Turn,
+			"board_y":   decoded.Board.Height,
+			"board_x":   decoded.Board.Width,
+			"my_health": decoded.You.Health,
+			"my_head_x": decoded.You.Body[0].X,
+			"my_head_y": decoded.You.Body[0].Y,
+			"picking":   pickDir,
+			"goal":      goalStr,
+		},
+		logCoords("goal", goal.Coord),
+		logCoords("left", me.left()),
+		logCoords("right", me.right()),
+		logCoords("up", me.up()),
+		logCoords("down", me.down()),
+	)
 
 	respond(res, api.MoveResponse{
 		Move: pickDir,
 	})
+}
+
+func logCoords(pfx string, coord api.Coord) ln.F {
+	return ln.F{
+		pfx + "_x": coord.X,
+		pfx + "_y": coord.Y,
+	}
 }
 
 func End(res http.ResponseWriter, req *http.Request) {

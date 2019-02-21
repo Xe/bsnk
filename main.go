@@ -56,7 +56,7 @@ func Start(res http.ResponseWriter, req *http.Request) {
 		log.Printf("Bad start request: %v", err)
 	}
 
-	ctx = opname.With(req.Context(), "game-start")
+	ctx := opname.With(req.Context(), "game-start")
 	ln.Log(ctx, ln.F{
 		"game_id": decoded.Game.ID,
 		"turn": decoded.Turn,
@@ -79,7 +79,7 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 	var pickDir = "down"
 
-	ctx = opname.With(req.Context(), "make-move")
+	ctx := opname.With(req.Context(), "make-move")
 	ln.Log(ctx, ln.F{
 		"game_id": decoded.Game.ID,
 		"turn": decoded.Turn,

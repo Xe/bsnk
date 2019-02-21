@@ -151,7 +151,7 @@ func (c Cell) PathNeighborCost(to astar.Pather) float64 {
 	toc := to.(Cell)
 
 	switch toc.Contents {
-	case Food, EnemySnakeHead:
+	case Food:
 		return getThis
 	case None:
 		return normal

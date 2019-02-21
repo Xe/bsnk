@@ -91,6 +91,9 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	var goalStr = "nothing"
 	var goal Cell
 
+	pretty.Println(me)
+	pretty.Println(me.up())
+
 	for _, fd := range b.GetFoods() {
 		f := logCoords("food", fd.Coord)
 

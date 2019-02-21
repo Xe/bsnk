@@ -10,6 +10,25 @@ type Coord struct {
 	Y int `json:"y"`
 }
 
+func (l Coord) Dir (r Coord) string {
+	switch{
+	case l.X >= r.X:
+		return "right"
+	case l.X < r.X:
+		return "left"
+	case l.Y >= r.Y:
+		return "up"
+	case l.Y < r.X:
+		return "down"
+	}
+
+	return "how"
+}
+
+func (l Coord) Eq (r Coord) bool {
+	return l.X == r.X && l.Y == r.Y
+}
+
 type Snake struct {
 	ID     string  `json:"id"`
 	Name   string  `json:"name"`

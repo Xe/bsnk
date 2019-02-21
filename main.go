@@ -58,10 +58,10 @@ func Start(res http.ResponseWriter, req *http.Request) {
 
 	ctx := opname.With(req.Context(), "game-start")
 	ln.Log(ctx, ln.F{
-		"game_id": decoded.Game.ID,
-		"turn": decoded.Turn,
-		"board_y": decoded.Board.Height,
-		"board_x": decoded.Board.Width,
+		"game_id":   decoded.Game.ID,
+		"turn":      decoded.Turn,
+		"board_y":   decoded.Board.Height,
+		"board_x":   decoded.Board.Width,
 		"my_health": decoded.You.Health,
 	})
 
@@ -79,16 +79,36 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 	var pickDir = "down"
 
+	b := MakeBoard(decoded)
+	me := b.GetSelfHead()
+	var target api.Coords
+	var targetCost float64
+
+	for _, fd := range b.GetFoods() {
+		path, distance, found := astar.Path()
+		if !found {
+			// can't get to this food
+			continue
+		}
+
+		if distance < targetCost {
+			target = path[0]
+			targetCost = distance
+		}
+	}
+
+	pickDir = me.Dir(target)
+
 	ctx := opname.With(req.Context(), "make-move")
 	ln.Log(ctx, ln.F{
-		"game_id": decoded.Game.ID,
-		"turn": decoded.Turn,
-		"board_y": decoded.Board.Height,
-		"board_x": decoded.Board.Width,
+		"game_id":   decoded.Game.ID,
+		"turn":      decoded.Turn,
+		"board_y":   decoded.Board.Height,
+		"board_x":   decoded.Board.Width,
 		"my_health": decoded.You.Health,
 		"my_head_x": decoded.You.Body[0].X,
 		"my_head_y": decoded.You.Body[0].Y,
-		"picking": pickDir,
+		"picking":   pickDir,
 	})
 
 	respond(res, api.MoveResponse{

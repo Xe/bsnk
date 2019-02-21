@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/Xe/bsnk/api"
+	"github.com/beefsack/go-astar"
 	"github.com/facebookgo/flagenv"
 	"within.website/ln"
 	"within.website/ln/ex"
@@ -79,25 +80,25 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 	var pickDir = "down"
 
-	b := MakeBoard(decoded)
+	b := MakeBoard(&decoded)
 	me := b.GetSelfHead()
-	var target api.Coords
+	var target api.Coord
 	var targetCost float64
 
 	for _, fd := range b.GetFoods() {
-		path, distance, found := astar.Path()
+		path, distance, found := astar.Path(me, fd)
 		if !found {
 			// can't get to this food
 			continue
 		}
 
 		if distance < targetCost {
-			target = path[0]
+			target = path[0].(Cell).Coord
 			targetCost = distance
 		}
 	}
 
-	pickDir = me.Dir(target)
+	pickDir = me.Coord.Dir(target)
 
 	ctx := opname.With(req.Context(), "make-move")
 	ln.Log(ctx, ln.F{

@@ -11,7 +11,7 @@ type Board struct {
 }
 
 func MakeBoard(sr *api.SnakeRequest) *Board {
-	return Board{
+	return &Board{
 		Board: sr.Board,
 		Self: sr.You,
 	}
@@ -21,7 +21,7 @@ func (b *Board) GetFoods() []Cell {
 	var result []Cell
 
 	for _, fd := range b.Food{
-		result = append(result, b.MakeCell(fd.X, fd.Y))
+		result = append(result, b.makeCell(fd.X, fd.Y))
 	}
 
 	return result
@@ -47,9 +47,14 @@ func (b *Board) makeCell(x, y int) Cell {
 	}
 
 	for _, snk := range b.Snakes {
-		for _, seg := range snk.Body {
+		for i, seg := range snk.Body {
 			if c.Eq(seg) {
-				result.Contents = EnemySnake
+				switch i {
+				case 0:
+					result.Contents = EnemySnakeHead
+				default:
+					result.Contents = EnemySnake
+				}
 				return result
 			}
 		}
@@ -113,19 +118,19 @@ func (c Cell) neighbor(relX, relY int) Cell {
 	return c.ref.makeCell(c.Coord.X + relX, c.Coord.Y + relY)
 }
 
-func (c Cell) up() {
+func (c Cell) up() astar.Pather {
 	return c.neighbor(0, 1)
 }
 
-func (c Cell) down() {
+func (c Cell) down() astar.Pather {
 	return c.neighbor(0, -1)
 }
 
-func (c Cell) left() {
+func (c Cell) left() astar.Pather {
 	return c.neighbor(-1, 0)
 }
 
-func (c Cell) right() {
+func (c Cell) right() astar.Pather {
 	return c.neighbor(1, 0)
 }
 
@@ -146,13 +151,13 @@ func (c Cell) PathNeighborCost(to astar.Pather) float64 {
 	toc := to.(Cell)
 
 	switch toc.Contents {
-	case Wall, MySnake, EnemySnake:
-		return doNotMove
-	case Food:
+	case Food, EnemySnakeHead:
 		return getThis
 	case None:
 		return normal
 	}
+
+	return doNotMove
 }
 
 func (c Cell) PathEstimatedCost(to astar.Pather) float64 {
@@ -169,5 +174,5 @@ func (c Cell) PathEstimatedCost(to astar.Pather) float64 {
 	}
 
 
-	return flaoat64(absX + absY)
+	return float64(absX + absY)
 }

@@ -86,6 +86,8 @@ func Move(res http.ResponseWriter, req *http.Request) {
 		"board_y": decoded.Board.Height,
 		"board_x": decoded.Board.Width,
 		"my_health": decoded.You.Health,
+		"my_head_x": decoded.You.Body[0].X,
+		"my_head_y": decoded.You.Body[0].Y,
 		"picking": pickDir,
 	})
 

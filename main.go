@@ -95,10 +95,15 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	var goal Cell
 
 	for _, fd := range b.GetFoods() {
+		f := logCoords("food", fd.Coord)
+
 		distance := me.PathEstimatedCost(fd)
+		f["distance"] = distance
+		ln.Log(ctx, ln.Info("found distance to food"), f)
 
 		if distance < targetCost {
 			for _, side := range []Cell{me.up(), me.down(), me.left(), me.right()} {
+				ln.Log(ctx, ln.Info("comparing side"), logCoords("at", side.Coord), f)
 				if side.PathEstimatedCost(fd) < distance {
 					target = side
 					targetCost = distance

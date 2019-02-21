@@ -73,6 +73,7 @@ func Start(res http.ResponseWriter, req *http.Request) {
 }
 
 func Move(res http.ResponseWriter, req *http.Request) {
+	ctx := opname.With(req.Context(), "move")
 	decoded := api.SnakeRequest{}
 	err := api.DecodeSnakeRequest(req, &decoded)
 	if err != nil {
@@ -112,7 +113,6 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 	pickDir = me.Coord.Dir(target.Coord)
 
-	ctx := opname.With(req.Context(), "make-move")
 	ln.Log(ctx,
 		ln.F{
 			"game_id":   decoded.Game.ID,

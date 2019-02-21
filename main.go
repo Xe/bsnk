@@ -83,11 +83,7 @@ func Move(res http.ResponseWriter, req *http.Request) {
 
 	b := MakeBoard(&decoded)
 	me := b.GetSelfHead()
-
-	if me.left().Coord.X < me.Coord.X {
-		pretty.Println(decoded)
-		panic(nil)
-	}
+	pretty.Println(decoded)
 
 	var target Cell
 	var targetCost float64 = 99999

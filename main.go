@@ -89,7 +89,7 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	var target api.Coord
 	var targetCost float64 = 99999
 	var goalStr = "nothing"
-	var goal Cell
+	var goal api.Coord
 
 	pretty.Println(me)
 	pretty.Println(me.up())
@@ -105,7 +105,7 @@ func Move(res http.ResponseWriter, req *http.Request) {
 			for _, side := range []Cell{me.up(), me.down(), me.left(), me.right()} {
 				ln.Log(ctx, ln.Info("comparing side"), logCoords("at", side.Coord), f)
 				if side.PathEstimatedCost(b.makeCell(fd.X, fd.Y)) < distance {
-					target = side
+					target = side.Coords
 					targetCost = distance
 					goalStr = "food"
 					goal = fd

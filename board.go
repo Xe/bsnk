@@ -9,12 +9,39 @@ import (
 type Board struct {
 	api.Board
 	Self api.Snake
+
+	places [][]CellContents
 }
 
 func MakeBoard(sr *api.SnakeRequest) *Board {
+	places := make([][]CellContents, sr.Board.Width)
+	for i := range places {
+		places[i] = make([]CellContents, sr.Board.Height)
+	}
+
+	for _, snk := range sr.Board.Snakes {
+		for i, seg := range snk.Body {
+			switch i {
+			case 0:
+				places[seg.X][seg.Y] = EnemySnakeHead
+			default:
+				places[seg.X][seg.Y] = EnemySnake
+			}
+		}
+	}
+
+	for _, myBody := range sr.You.Body {
+		places[myBody.X][myBody.Y] = MySnake
+	}
+
+	for _, food := range sr.Board.Food {
+		places[food.X][food.Y] = Food
+	}
+
 	return &Board{
-		Board: sr.Board,
-		Self:  sr.You,
+		Board:  sr.Board,
+		Self:   sr.You,
+		places: places,
 	}
 }
 
@@ -49,34 +76,6 @@ func (b *Board) makeCell(x, y int) *Cell {
 	if !b.isInBoard(c) {
 		result.Contents = Wall
 		return result
-	}
-
-	for _, snk := range b.Snakes {
-		for i, seg := range snk.Body {
-			if c.Eq(seg) {
-				switch i {
-				case 0:
-					result.Contents = EnemySnakeHead
-				default:
-					result.Contents = EnemySnake
-				}
-				return result
-			}
-		}
-	}
-
-	for _, myBody := range b.Self.Body {
-		if c.Eq(myBody) {
-			result.Contents = MySnake
-			return result
-		}
-	}
-
-	for _, food := range b.Food {
-		if c.Eq(food) {
-			result.Contents = Food
-			return result
-		}
 	}
 
 	return result
@@ -121,8 +120,8 @@ type Cell struct {
 
 func (c Cell) neighbor(relX, relY int) api.Coord {
 	return api.Coord{
-		X: c.Coord.X+relX,
-		Y: c.Coord.Y+relY,
+		X: c.Coord.X + relX,
+		Y: c.Coord.Y + relY,
 	}
 }
 

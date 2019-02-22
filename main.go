@@ -83,8 +83,9 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	var pickDir = "down"
 
 	b := MakeBoard(&decoded)
-	me := b.HeadCoords()
-	pretty.Println(me)
+	pretty.Println(b)
+	hc := b.HeadCoords()
+	me := b.makeCell(hc.X, hc.Y)
 
 	var target api.Coord
 	var targetCost float64 = 99999

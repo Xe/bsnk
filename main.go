@@ -97,15 +97,15 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	for _, fd := range b.Food {
 		f := logCoords("food", fd)
 
-		distance := me.PathEstimatedCost(b.makeCell(fd.X, fd.Y))
+		distance := me.PathEstimatedCost(*b.makeCell(fd.X, fd.Y))
 		f["distance"] = distance
 		ln.Log(ctx, ln.Info("found distance to food"), f)
 
 		if distance < targetCost {
-			for _, side := range []Cell{me.up(), me.down(), me.left(), me.right()} {
-				ln.Log(ctx, ln.Info("comparing side"), logCoords("at", side.Coord), f)
-				if side.PathEstimatedCost(b.makeCell(fd.X, fd.Y)) < distance {
-					target = side.Coord
+			for _, side := range []api.Coord{me.up(), me.down(), me.left(), me.right()} {
+				ln.Log(ctx, ln.Info("comparing side"), logCoords("at", side), f)
+				if b.makeCell(side.X, side.Y).PathEstimatedCost(*b.makeCell(fd.X, fd.Y)) < distance {
+					target = side
 					targetCost = distance
 					goalStr = "food"
 					goal = fd
@@ -129,10 +129,10 @@ func Move(res http.ResponseWriter, req *http.Request) {
 			"goal":      goalStr,
 		},
 		logCoords("goal", goal),
-		logCoords("left", me.left().Coord),
-		logCoords("right", me.right().Coord),
-		logCoords("up", me.up().Coord),
-		logCoords("down", me.down().Coord),
+		logCoords("left", me.left()),
+		logCoords("right", me.right()),
+		logCoords("up", me.up()),
+		logCoords("down", me.down()),
 	)
 
 	respond(res, api.MoveResponse{

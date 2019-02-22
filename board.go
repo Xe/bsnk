@@ -22,24 +22,24 @@ func (b *Board) GetFoods() []Cell {
 	var result []Cell
 
 	for _, fd := range b.Food {
-		result = append(result, b.makeCell(fd.X, fd.Y))
+		result = append(result, *b.makeCell(fd.X, fd.Y))
 	}
 
 	return result
 }
 
-func (b *Board) GetSelfHead() Cell {
+func (b *Board) GetSelfHead() *Cell {
 	return b.makeCell(b.Self.Body[0].X, b.Self.Body[0].Y)
 }
 
-func (b *Board) makeCell(x, y int) Cell {
+func (b *Board) makeCell(x, y int) *Cell {
 	log.Printf("making cell at %d,%d", x, y)
 	c := api.Coord{
 		X: x,
 		Y: y,
 	}
 
-	result := Cell{
+	result := &Cell{
 		ref: b,
 	}
 
@@ -116,30 +116,33 @@ type Cell struct {
 	Contents CellContents
 }
 
-func (c Cell) neighbor(relX, relY int) Cell {
-	return c.ref.makeCell(c.Coord.X+relX, c.Coord.Y+relY)
+func (c Cell) neighbor(relX, relY int) api.Coord {
+	return api.Coord{
+		X: c.Coord.X+relX,
+		Y: c.Coord.Y+relY,
+	}
 }
 
-func (c Cell) up() Cell {
+func (c Cell) up() api.Coord {
 	return c.neighbor(0, 1)
 }
 
-func (c Cell) down() Cell {
+func (c Cell) down() api.Coord {
 	return c.neighbor(0, -1)
 }
 
-func (c Cell) left() Cell {
+func (c Cell) left() api.Coord {
 	return c.neighbor(-1, 0)
 }
 
-func (c Cell) right() Cell {
+func (c Cell) right() api.Coord {
 	return c.neighbor(1, 0)
 }
 
-func (c Cell) PathNeighbors() []Cell {
-	var result []Cell
-	for _, side := range []Cell{c.up(), c.down(), c.left(), c.right()} {
-		if pathNeighborCost(side) != doNotMove {
+func (c *Cell) PathNeighbors() []api.Coord {
+	var result []api.Coord
+	for _, side := range []api.Coord{c.up(), c.down(), c.left(), c.right()} {
+		if pathNeighborCost(c.ref.makeCell(side.X, side.Y)) != doNotMove {
 			result = append(result, side)
 		}
 	}
@@ -154,7 +157,7 @@ const (
 	normal    = 100
 )
 
-func pathNeighborCost(to Cell) float64 {
+func pathNeighborCost(to *Cell) float64 {
 	switch to.Contents {
 	case Food:
 		return getThis

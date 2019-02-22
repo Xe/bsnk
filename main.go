@@ -29,6 +29,7 @@ func index(res http.ResponseWriter, req *http.Request) {
 var (
 	port  = flag.String("port", "5000", "http port to listen on")
 	color = flag.String("color", "#c79dd7", "snake color code to use")
+	gitRev = flag.String("git-rev", "", "if set, use this git revision for the color code")
 )
 
 func main() {
@@ -66,8 +67,15 @@ func Start(res http.ResponseWriter, req *http.Request) {
 		"my_health": decoded.You.Health,
 	})
 
+	clr := *color
+
+	if *gitRev != "" {
+		rev := *gitRev
+		clr = "#" + rev[0:6]
+	}
+
 	respond(res, api.StartResponse{
-		Color: *color,
+		Color: clr,
 	})
 }
 

@@ -86,7 +86,7 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	me := b.GetSelfHead()
 	pretty.Println(decoded)
 
-	var target Cell
+	var target api.Coord
 	var targetCost float64 = 99999
 	var goalStr = "nothing"
 	var goal Cell
@@ -94,17 +94,17 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	pretty.Println(me)
 	pretty.Println(me.up())
 
-	for _, fd := range b.GetFoods() {
-		f := logCoords("food", fd.Coord)
+	for _, fd := range b.Food {
+		f := logCoords("food", fd)
 
-		distance := me.PathEstimatedCost(fd)
+		distance := me.PathEstimatedCost(b.makeCell(fd.X, fd.Y))
 		f["distance"] = distance
 		ln.Log(ctx, ln.Info("found distance to food"), f)
 
 		if distance < targetCost {
 			for _, side := range []Cell{me.up(), me.down(), me.left(), me.right()} {
 				ln.Log(ctx, ln.Info("comparing side"), logCoords("at", side.Coord), f)
-				if side.PathEstimatedCost(fd) < distance {
+				if side.PathEstimatedCost(b.makeCell(fd.X, fd.Y)) < distance {
 					target = side
 					targetCost = distance
 					goalStr = "food"
@@ -114,7 +114,7 @@ func Move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	pickDir = me.Coord.Dir(target.Coord)
+	pickDir = me.Coord.Dir(target)
 
 	ln.Log(ctx,
 		ln.F{

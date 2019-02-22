@@ -31,6 +31,7 @@ func (b *Board) GetSelfHead() Cell {
 }
 
 func (b *Board) makeCell(x, y int) Cell {
+	log.Printf("making cell at %d,%d", x, y)
 	c := api.Coord{
 		X: x,
 		Y: y,

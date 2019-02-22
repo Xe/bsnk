@@ -83,16 +83,13 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	var pickDir = "down"
 
 	b := MakeBoard(&decoded)
-	me := b.GetSelfHead()
-	pretty.Println(decoded)
+	me := b.HeadCoords()
+	pretty.Println(me)
 
 	var target api.Coord
 	var targetCost float64 = 99999
 	var goalStr = "nothing"
 	var goal api.Coord
-
-	pretty.Println(me)
-	pretty.Println(me.up())
 
 	for _, fd := range b.Food {
 		f := logCoords("food", fd)

@@ -28,6 +28,9 @@ func (b *Board) GetFoods() []Cell {
 	return result
 }
 
+func (b *Board) HeadCoords() api.Coord {
+	return b.Self.Body[0]
+}
 func (b *Board) GetSelfHead() *Cell {
 	return b.makeCell(b.Self.Body[0].X, b.Self.Body[0].Y)
 }

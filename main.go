@@ -271,6 +271,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		Values: map[string]interface{}{
 			"turn":   decoded.Turn,
 			"data":   base64.StdEncoding.EncodeToString(data),
+			"target": fmt.Sprintf("(%d,%d)", target.X, target.Y),
+			"immed": fmt.Sprintf("(%d,%d)", immed.X, immed.Y),
 			"picked": pickDir,
 		},
 	}).Result()

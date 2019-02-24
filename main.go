@@ -251,7 +251,19 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	for _, sk := range decoded.Board.Snakes {
 		for _, pt := range sk.Body {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
+
+			lf := pt.Left()
+			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
+			lf = pt.Right()
+			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
+			lf = pt.Up()
+			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
+			lf = pt.Down()
+			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
 		}
+	}
+
+	for _, pt := range me {
 	}
 
 retry:

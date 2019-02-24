@@ -267,7 +267,11 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+	path, err := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+	if err != nil {
+		ln.Error(ctx, err)
+		pickDir = "up"
+	}
 	if len(path) != 0 {
 		pickDir = me[0].Dir(api.Coord{
 			X: path[1].X,

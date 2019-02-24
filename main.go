@@ -155,7 +155,6 @@ func (b bot) start(res http.ResponseWriter, req *http.Request) {
 
 func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	ctx := opname.With(req.Context(), "move")
-	rc := b.rc.WithContext(ctx)
 	decoded := api.SnakeRequest{}
 	err := api.DecodeSnakeRequest(req, &decoded)
 	if err != nil {
@@ -167,17 +166,15 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	directions := []string{"up", "left", "down", "right"}
 	pickDir = directions[decoded.Turn%len(directions)]
 
-	ln.Log(ctx,
-		ln.F{
-			"game_id":   decoded.Game.ID,
-			"turn":      decoded.Turn,
-			"board_y":   decoded.Board.Height,
-			"board_x":   decoded.Board.Width,
-			"my_health": decoded.You.Health,
-			"picking":   pickDir,
-		},
-		logCoords("my_head", decoded.You.Body[0]),
-	)
+	f := 		ln.F{
+		"game_id":   decoded.Game.ID,
+		"turn":      decoded.Turn,
+		"board_y":   decoded.Board.Height,
+		"board_x":   decoded.Board.Width,
+		"my_health": decoded.You.Health,
+		"picking":   pickDir,
+	}
+	f.Extend(logCoords("my_head", decoded.You.Body[0]))
 
 	respond(res, api.MoveResponse{
 		Move: pickDir,
@@ -196,7 +193,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		Values: map[string]interface{}{
 			"turn": decoded.Turn,
 			"data": base64.StdEncoding.EncodeToString(data),
-			"picked", pickDir,
+			"picked": pickDir,
 		},
 	}).Result()
 	if err != nil {
@@ -205,8 +202,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		f["stream_id"] = id
 	}
 
-	ln.Log(ctx, f, ln.Info("starting game"))
-
+	ln.Log(ctx, f, ln.Info("moving"))
 }
 
 func logCoords(pfx string, coord api.Coord) ln.F {

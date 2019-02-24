@@ -253,17 +253,14 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
 
 			lf := pt.Left()
-			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
 			lf = pt.Right()
-			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
 			lf = pt.Up()
-			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
 			lf = pt.Down()
-			pf.SetAdditionalPointCost(lf.x, lf.y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
 		}
-	}
-
-	for _, pt := range me {
 	}
 
 retry:

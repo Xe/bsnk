@@ -331,14 +331,20 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 
+	pathData, err := json.Marshal(path)
+	if err != nil {
+		panic(err)
+	}
+
 	id, err := rc.XAdd(&redis.XAddArgs{
 		Stream: "game:" + decoded.Game.ID,
 		Values: map[string]interface{}{
-			"turn":   decoded.Turn,
-			"data":   base64.StdEncoding.EncodeToString(data),
-			"me":     fmt.Sprintf("(%d,%d)", me[0].X, me[0].Y),
-			"target": fmt.Sprintf("(%d,%d)", target.X, target.Y),
-			"picked": pickDir,
+			"turn":     decoded.Turn,
+			"data":     base64.StdEncoding.EncodeToString(data),
+			"pathData": base64.StdEncoding.EncodeToString(pathData),
+			"me":       fmt.Sprintf("(%d,%d)", me[0].X, me[0].Y),
+			"target":   fmt.Sprintf("(%d,%d)", target.X, target.Y),
+			"picked":   pickDir,
 		},
 	}).Result()
 	if err != nil {

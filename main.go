@@ -256,7 +256,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			grid[lf.X][lf.Y] = 30 * i
 			lf = pt.Up()
 			grid[lf.X][lf.Y] = 30 * i
-			lf = pt.Down() 
+			lf = pt.Down()
 			grid[lf.X][lf.Y] = 30 * i
 		}
 
@@ -301,28 +301,27 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			ln.Error(ctx, err, f, ln.F{"retry": 1})
 
 			target = decoded.Board.Snakes[0].Body[0]
-			path, err = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
-			if err != nil {
-				for _, cd := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Down()} {
-					if !decoded.Board.IsDeadly(cd) {
-						pickDir = me[0].Dir(cd)
-					}
-				}
-			}
-
+			path, _ = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 		}
-
 	}
 
-	ln.Log(ctx,f)
-	i := 0
+	f["path"] = path
+
+	ln.Log(ctx, f)
+	i := 1
+	if len(path) == 0 {
+		for _, cd := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Down()} {
+			if !decoded.Board.IsDeadly(cd) {
+				pickDir = me[0].Dir(cd)
+			}
+		}
+	}
 	pickDir = me[0].Dir(api.Coord{
 		X: path[i].X,
 		Y: path[i].Y,
 	})
 
 	f["picking"] = pickDir
-	f["path"] = path
 	f["distance"] = manhattan(me[0], target)
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
 	f.Extend(logCoords("target", target))

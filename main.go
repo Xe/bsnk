@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"expvar"
 	"flag"
 	"fmt"
 	"log"
@@ -74,13 +75,19 @@ func main() {
 		ln.FatalErr(ctx, err)
 	}
 
-	b := bot{rc: redis.NewClient(opt)}
+	b := bot{
+		rc: redis.NewClient(opt),
+		gameCounter: expvar.NewInt("games_begun"),
+		endCounter: expvar.NewInt("games_ended"),
+		moveCounter: expvar.NewInt("moves_made"),
+		pingCounter: expvar.NewInt("ping_counter"),
+	}
 
 	http.HandleFunc("/", index)
 	http.HandleFunc("/start", b.start)
 	http.HandleFunc("/move", b.move)
-	http.HandleFunc("/end", End)
-	http.HandleFunc("/ping", Ping)
+	http.HandleFunc("/end", b.end)
+	http.HandleFunc("/ping", b.ping)
 
 	f := ln.F{
 		"port": *port,
@@ -100,6 +107,10 @@ func main() {
 
 type bot struct {
 	rc *redis.Client
+	gameCounter *expvar.Int
+	moveCounter *expvar.Int
+	endCounter *expvar.Int
+	pingCounter *expvar.Int
 }
 
 func (b bot) start(res http.ResponseWriter, req *http.Request) {
@@ -117,7 +128,10 @@ func (b bot) start(res http.ResponseWriter, req *http.Request) {
 		"board_y":   decoded.Board.Height,
 		"board_x":   decoded.Board.Width,
 		"my_health": decoded.You.Health,
-	} 
+	}
+
+
+	b.gameCounter.Add(1)
 
 	ctx := opname.With(req.Context(), "game-start")
 
@@ -163,7 +177,11 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	err := api.DecodeSnakeRequest(req, &decoded)
 	if err != nil {
 		log.Printf("Bad move request: %v", err)
+		http.Error(res, "bad json", http.StatusBadRequest)
+		return
 	}
+
+	b.moveCounter.Add(1)
 
 	var pickDir string
 
@@ -215,10 +233,12 @@ func logCoords(pfx string, coord api.Coord) ln.F {
 	}
 }
 
-func End(res http.ResponseWriter, req *http.Request) {
+func  (b bot) end(res http.ResponseWriter, req *http.Request) {
+	b.endCounter.Add(1)
 	return
 }
 
-func Ping(res http.ResponseWriter, req *http.Request) {
+func (b bot) ping(res http.ResponseWriter, req *http.Request) {
+	b.pingCounter.Add(1)
 	return
 }

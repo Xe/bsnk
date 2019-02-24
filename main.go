@@ -217,7 +217,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var pickDir string
 	var target api.Coord
 
-	if len(decoded.Board.Food) > 1 {
+	if len(decoded.Board.Food) > 0 && decoded.You.Health < 50 {
 		target = selectFood(decoded)
 	} else {
 		tail := me[len(me)-1]

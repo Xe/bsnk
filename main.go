@@ -187,6 +187,7 @@ func manhattan(l, r api.Coord) float64 {
 
 func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	ctx := opname.With(req.Context(), "move")
+	rc := b.rc.WithContext(ctx)
 	decoded := api.SnakeRequest{}
 	err := api.DecodeSnakeRequest(req, &decoded)
 	if err != nil {
@@ -223,14 +224,14 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	yd := target.Y - me[0].Y
 	if xd > yd {
 		// x is bigger
-		if xd >= 0 {
+		if xd > 0 {
 			pickDir = "right"
 		} else {
 			pickDir = "left"
 		}
 	} else {
 		// y is bigger
-		if yd <= 0 {
+		if yd < 0 {
 			pickDir = "up"
 		} else {
 			pickDir = "down"
@@ -263,8 +264,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		// should not happen
 		panic(err)
 	}
-
-	rc := b.rc.WithContext(ctx)
 
 	id, err := rc.XAdd(&redis.XAddArgs{
 		Stream: decoded.Game.ID,

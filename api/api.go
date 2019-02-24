@@ -10,13 +10,13 @@ type Coord struct {
 	Y int `json:"y"`
 }
 
-func (l Coord) Dir (r Coord) string {
-	switch{
-	case l.X >= r.X:
+func (l Coord) Dir(r Coord) string {
+	switch {
+	case l.X > r.X:
 		return "right"
 	case l.X < r.X:
 		return "left"
-	case l.Y >= r.Y:
+	case l.Y > r.Y:
 		return "up"
 	case l.Y < r.X:
 		return "down"
@@ -25,8 +25,36 @@ func (l Coord) Dir (r Coord) string {
 	return "how"
 }
 
-func (l Coord) Eq (r Coord) bool {
+func (l Coord) Eq(r Coord) bool {
 	return l.X == r.X && l.Y == r.Y
+}
+
+func (l Coord) Left() Coord {
+	return Coord{
+		X: l.X - 1,
+		Y: l.Y,
+	}
+}
+
+func (l Coord) Right() Coord {
+	return Coord{
+		X: l.X + 1,
+		Y: l.Y,
+	}
+}
+
+func (l Coord) Up() Coord {
+	return Coord{
+		X: l.X,
+		Y: l.Y + 1,
+	}
+}
+
+func (l Coord) Down() Coord {
+	return Coord{
+		X: l.X,
+		Y: l.Y - 1,
+	}
 }
 
 type Snake struct {

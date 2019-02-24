@@ -254,13 +254,15 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+retry:
 	path, err := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 	if err != nil {
 		ln.Error(ctx, err)
-		pickDir = me[0].Dir(api.Coord{
+		target = api.Coord{
 			X: decoded.Turn % decoded.Board.Width,
-			Y: decoded.Board.Height-2,
-		})
+			Y: decoded.Board.Height - 2,
+		}
+		goto retry
 	}
 	if len(path) != 0 {
 		pickDir = me[0].Dir(api.Coord{

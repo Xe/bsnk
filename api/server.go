@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 
 	"within.website/ln"
 	"within.website/ln/opname"
@@ -38,16 +39,16 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.URL.Path {
-	case "/start":
+	switch filepath.Base(r.URL.Path) {
+	case "start":
 		ctx := opname.With(r.Context(), "start-game")
 		result, err = s.Brain.Start(ctx, decoded)
 		ln.Log(ctx, decoded, result)
-	case "/move":
+	case "move":
 		ctx := opname.With(r.Context(), "move")
 		result, err = s.Brain.Move(ctx, decoded)
 		ln.Log(ctx, decoded, result)
-	case "/end":
+	case "end":
 		ctx := opname.With(r.Context(), "end")
 		err = s.Brain.End(ctx, decoded)
 		ln.Log(ctx, decoded)

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/Xe/bsnk/api"
+	"github.com/kr/pretty"
 	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 )
@@ -61,6 +62,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 			}
 		}
 	} else {
+		pretty.Println(path)
 		pickDir = me[0].Dir(api.Coord{
 			X: path[1].X,
 			Y: path[1].Y,

@@ -220,10 +220,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	if len(decoded.Board.Food) > 1 {
 		target = selectFood(decoded)
 	} else {
-		target = me[len(me)-1].Up()
+		tail := me[len(me)-1]
+		for _, cd := range []api.Coord{tail.Up(), tail.Left(), tail.Down(), tail.Down()} {
+			if !decoded.Board.IsDeadly(cd) {
+				target = cd
+			}
+		}
 	}
-
-
 
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()

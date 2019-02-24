@@ -220,7 +220,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	target = selectFood(decoded)
 	if target.X == 0 && target.Y == 0 {
 		tail := me[len(me)-1]
-		for _, cd := range []api.Coord{tail.Up(), tail.Left(), tail.Down(), tail.Down()} {
+		for _, cd := range []api.Coord{tail.Up(), tail.Left(), tail.Down(), tail.Right()} {
 			if !decoded.Board.IsDeadly(cd) {
 				target = cd
 			}

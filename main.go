@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -213,26 +214,29 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if foundTarget {
-		xd := target.X - me.X
-		yd := target.Y - me.Y
-		if xd < yd {
-			// x is bigger
-			if xd <= 0 {
-				pickDir = "right"
-			} else {
-				pickDir = "left"
-			}
+	if !foundTarget {
+		target = api.Coord{
+			X: rand.Intn(decoded.Board.Width),
+			Y: rand.Intn(decoded.Board.Height),
+		}
+	}
+
+	xd := target.X - me[0].X
+	yd := target.Y - me[0].Y
+	if xd < yd {
+		// x is bigger
+		if xd <= 0 {
+			pickDir = "right"
 		} else {
-			// y is bigger
-			if yd <= 0 {
-				pickDir = "up"
-			} else {
-				pickDir = "down"
-			}
+			pickDir = "left"
 		}
 	} else {
-		pickDir = directions[decoded.Turn%len(directions)]
+		// y is bigger
+		if yd <= 0 {
+			pickDir = "up"
+		} else {
+			pickDir = "down"
+		}
 	}
 
 	f := ln.F{

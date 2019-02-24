@@ -217,9 +217,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var pickDir string
 	var target api.Coord
 
-	if len(decoded.Board.Food) > 0 && decoded.You.Health < 50 {
-		target = selectFood(decoded)
-	} else {
+	target = selectFood(decoded)
+	if target.X == 0 && target.Y == 0 {
 		tail := me[len(me)-1]
 		for _, cd := range []api.Coord{tail.Up(), tail.Left(), tail.Down(), tail.Down()} {
 			if !decoded.Board.IsDeadly(cd) {

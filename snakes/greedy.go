@@ -7,6 +7,7 @@ import (
 
 	"github.com/SolarLune/paths"
 	"github.com/Xe/bsnk/api"
+	"github.com/kr/pretty"
 	"within.website/ln"
 )
 
@@ -40,6 +41,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	}
 
 	path := g.GetPath(g.Get(me[0].X, me[0].Y), g.Get(target.X, target.Y), false)
+	pretty.Println(path)
 	if len(path.Cells) != 0 {
 		t := path.Next()
 		immedTarget := api.Coord{

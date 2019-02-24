@@ -249,13 +249,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	for _, sk := range decoded.Board.Snakes {
 		for i, pt := range sk.Body {
 			lf := pt.Left()
-			grid[lf.X][lf.Y] = 30 * i
+			grid[lf.X % decoded.Board.Width][lf.Y % decoded.Board.Height] = 30 * i
 			lf = pt.Right()
-			grid[lf.X][lf.Y] = 30 * i
+			grid[lf.X % decoded.Board.Width][lf.Y % decoded.Board.Height] = 30 * i
 			lf = pt.Up()
-			grid[lf.X][lf.Y] = 30 * i
+			grid[lf.X % decoded.Board.Width][lf.Y % decoded.Board.Height] = 30 * i
 			lf = pt.Down()
-			grid[lf.X][lf.Y] = 30 * i
+			grid[lf.X % decoded.Board.Width][lf.Y % decoded.Board.Height] = 30 * i
 		}
 
 	}

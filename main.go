@@ -231,6 +231,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	case decoded.Turn < 4:
 		target = selectFood(decoded)
 
+	case decoded.Turn == 4:
+		// random target
+		target = api.Coord{
+			X: rand.Intn(decoded.Board.Width),
+			Y: rand.Intn(decoded.Board.Height),
+		}
+
 	case decoded.You.Health > 50:
 		target = me[len(me)-1]
 

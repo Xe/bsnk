@@ -228,8 +228,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var target api.Coord
 
 	switch {
-	case len(decoded.Board.Food) == 1:
-		target = me[len(me)-1]
 	default:
 		target = selectFood(decoded)
 	}

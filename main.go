@@ -207,7 +207,7 @@ func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 
 	xd := target.X - me[0].X
 	yd := target.Y - me[0].Y
-	if xd > yd {
+	if xd < yd {
 		// x is bigger
 		if xd > 0 {
 			immed = me[0].Right()
@@ -219,9 +219,21 @@ func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 		if yd > 0 {
 			immed = me[0].Up()
 		} else {
+			log.Printf("%v down %v %v %v", target, xd, yd, distance)
 			immed = me[0].Down()
 		}
 	}
+
+	ln.Log(
+		context.Background(),
+		logCoords("me", me[0]),
+		logCoords("target",target),
+		logCoords("immed", immed),
+		ln.F{
+			"game_id": gs.Game.ID,
+			"direction": me[0].Dir(immed),
+		},
+	)
 
 	return
 }
@@ -242,7 +254,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	me := decoded.You.Body
 	var pickDir string
 	target, immed := selectTarget(decoded)
-	pickDir = me[0].Dir(immed)
+	pickDir = immed.Dir(me[0])
 
 	f := ln.F{
 		"game_id":   decoded.Game.ID,
@@ -271,8 +283,9 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		Values: map[string]interface{}{
 			"turn":   decoded.Turn,
 			"data":   base64.StdEncoding.EncodeToString(data),
+			"me":     fmt.Sprintf("(%d,%d)", me[0].X, me[0].Y),
 			"target": fmt.Sprintf("(%d,%d)", target.X, target.Y),
-			"immed": fmt.Sprintf("(%d,%d)", immed.X, immed.Y),
+			"immed":  fmt.Sprintf("(%d,%d)", immed.X, immed.Y),
 			"picked": pickDir,
 		},
 	}).Result()

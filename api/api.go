@@ -2,12 +2,17 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
 type Coord struct {
 	X int `json:"x"`
 	Y int `json:"y"`
+}
+
+func (l Coord) String() string {
+	return fmt.Sprintf("(%d,%d)", l.X, l.Y)
 }
 
 func (l Coord) Dir(r Coord) string {

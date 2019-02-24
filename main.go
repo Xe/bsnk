@@ -218,14 +218,14 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		yd := target.Y - me.Y
 		if xd > yd {
 			// x is bigger
-			if xd >= 0 {
+			if xd <= 0 {
 				pickDir = "right"
 			} else {
 				pickDir = "left"
 			}
 		} else {
 			// y is bigger
-			if yd >= 0 {
+			if yd <= 0 {
 				pickDir = "up"
 			} else {
 				pickDir = "down"

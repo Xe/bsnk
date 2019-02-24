@@ -200,13 +200,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	directions := []string{"up", "left", "down", "right"}
 
-	me := decoded.You.Body[0]
+	me := decoded.You.Body
 	var foundTarget bool
 	var target api.Coord
 	var distance float64 = 99999999999
 
 	for _, fd := range decoded.Board.Food {
-		if sc := manhattan(me, fd); sc < distance {
+		if sc := manhattan(me[0], fd); sc < distance {
 			distance = sc
 			target = fd
 			foundTarget = true
@@ -216,7 +216,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	if foundTarget {
 		xd := target.X - me.X
 		yd := target.Y - me.Y
-		if xd > yd {
+		if xd < yd {
 			// x is bigger
 			if xd <= 0 {
 				pickDir = "right"

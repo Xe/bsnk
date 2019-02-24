@@ -6,7 +6,6 @@ import (
 	"math/rand"
 
 	"github.com/Xe/bsnk/api"
-	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 )
 
@@ -48,6 +47,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 
 	for _, sk := range decoded.Board.Snakes {
 		for _, pt := range sk.Body {
+			grid[pt.X][pt.Y] = 2
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
 		}
 	}
@@ -58,6 +58,14 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 			X: path[1].X,
 			Y: path[1].Y,
 		})
+	}
+
+	if pickDir == "" {
+		for _, place := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Right()} {
+			if !decoded.Board.IsDeadly(place) {
+				pickDir = me[0].Dir(place)
+			}
+		}
 	}
 
 	return &api.MoveResponse{

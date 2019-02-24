@@ -190,6 +190,10 @@ func selectFood(gs api.SnakeRequest) api.Coord {
 	var target api.Coord
 	var distance float64 = 99999999999
 
+	if gs.You.Health > 30 {
+		return target
+	}
+
 	for _, fd := range gs.Board.Food {
 		if sc := manhattan(me[0], fd); sc < distance {
 			distance = sc

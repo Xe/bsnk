@@ -40,10 +40,6 @@ func TestSelectTarget(t *testing.T) {
 				X: 4,
 				Y: 7,
 			},
-			immed: api.Coord{
-				X: 2,
-				Y: 1,
-			},
 		},
 		{
 			name: "down",
@@ -73,23 +69,15 @@ func TestSelectTarget(t *testing.T) {
 				X: 1,
 				Y: 7,
 			},
-			immed: api.Coord{
-				X: 1,
-				Y: 2,
-			},
 		},
 	}
 
 	for _, cs := range cases {
 		t.Run(cs.name, func(t *testing.T) {
-			target, immed := selectTarget(cs.data)
+			target := selectTarget(cs.data)
 
 			if !target.Eq(cs.target) {
 				t.Errorf("wanted target: %s, got: %s", cs.target, target)
-			}
-
-			if !immed.Eq(cs.immed) {
-				t.Errorf("wanted immed: %s, got: %s", cs.immed, immed)
 			}
 		})
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/Xe/bsnk/api"
 	"github.com/facebookgo/flagenv"
 	"github.com/go-redis/redis"
+	"github.com/prettymuchbryce/goeasystar"
 	"golang.org/x/net/trace"
 	"within.website/ln"
 	"within.website/ln/ex"
@@ -185,8 +186,9 @@ func manhattan(l, r api.Coord) float64 {
 	return float64(absX + absY)
 }
 
-func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
+func selectTarget(gs api.SnakeRequest) api.Coord {
 	me := gs.You.Body
+	var target api.Coord
 	var foundTarget bool
 	var distance float64 = 99999999999
 
@@ -205,37 +207,7 @@ func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 		}
 	}
 
-	xd := target.X - me[0].X
-	yd := target.Y - me[0].Y
-	if xd < yd {
-		// x is bigger
-		if xd > 0 {
-			immed = me[0].Right()
-		} else {
-			immed = me[0].Left()
-		}
-	} else {
-		// y is bigger
-		if yd < 0 {
-			immed = me[0].Up()
-		} else {
-			log.Printf("%v down %v %v %v", target, xd, yd, distance)
-			immed = me[0].Down()
-		}
-	}
-
-	ln.Log(
-		context.Background(),
-		logCoords("me", me[0]),
-		logCoords("target", target),
-		logCoords("immed", immed),
-		ln.F{
-			"game_id":   gs.Game.ID,
-			"direction": me[0].Dir(immed),
-		},
-	)
-
-	return
+	return target
 }
 
 func (b bot) move(res http.ResponseWriter, req *http.Request) {
@@ -253,8 +225,34 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	me := decoded.You.Body
 	var pickDir string
-	target, immed := selectTarget(decoded)
-	pickDir = immed.Dir(me[0])
+	target := selectTarget(decoded)
+
+	pf := goeasystar.NewPathfinder()
+	pf.DisableCornerCutting()
+	pf.DisableDiagonals()
+	pf.SetAcceptableTiles([]int{0})
+
+	var grid [][]int
+	grid = make([][]int, decoded.Board.Height)
+	for i := range grid {
+		grid[i] = make([]int, decoded.Board.Width)
+	}
+
+	pf.SetGrid(grid)
+
+	for _, sk := range decoded.Board.Snakes {
+		for _, pt := range sk.Body {
+			pf.AvoidAdditionalPoint(pt.X, pt.Y)
+		}
+	}
+
+	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+	if len(path) != 0 {
+		pickDir = me[0].Dir(api.Coord{
+			X: path[1].X,
+			Y: path[1].Y,
+		})
+	}
 
 	f := ln.F{
 		"game_id":   decoded.Game.ID,
@@ -285,7 +283,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			"data":   base64.StdEncoding.EncodeToString(data),
 			"me":     fmt.Sprintf("(%d,%d)", me[0].X, me[0].Y),
 			"target": fmt.Sprintf("(%d,%d)", target.X, target.Y),
-			"immed":  fmt.Sprintf("(%d,%d)", immed.X, immed.Y),
 			"picked": pickDir,
 		},
 	}).Result()

@@ -200,13 +200,6 @@ func selectFood(gs api.SnakeRequest) api.Coord {
 		}
 	}
 
-	if !foundTarget {
-		target = api.Coord{
-			X: rand.Intn(gs.Board.Width),
-			Y: rand.Intn(gs.Board.Height),
-		}
-	}
-
 	return target
 }
 
@@ -227,8 +220,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var pickDir string
 	var target api.Coord
 
-	switch {
-	default:
+	if len(decoded.Board.Food) > 1 {
 		target = selectFood(decoded)
 	}
 
@@ -253,6 +245,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
 		}
 
+		/*
 		if sk.ID != decoded.You.ID {
 			pt := sk.Body[0]
 			lf := pt.Left()
@@ -264,6 +257,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			lf = pt.Down()
 			pf.AvoidAdditionalPoint(lf.X, lf.Y)
 		}
+*/
 	}
 
 	f := ln.F{

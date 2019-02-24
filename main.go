@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"time"
 
@@ -246,18 +245,18 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 
 		/*
-		if sk.ID != decoded.You.ID {
-			pt := sk.Body[0]
-			lf := pt.Left()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
-			lf = pt.Right()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
-			lf = pt.Up()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
-			lf = pt.Down()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
-		}
-*/
+			if sk.ID != decoded.You.ID {
+				pt := sk.Body[0]
+				lf := pt.Left()
+				pf.AvoidAdditionalPoint(lf.X, lf.Y)
+				lf = pt.Right()
+				pf.AvoidAdditionalPoint(lf.X, lf.Y)
+				lf = pt.Up()
+				pf.AvoidAdditionalPoint(lf.X, lf.Y)
+				lf = pt.Down()
+				pf.AvoidAdditionalPoint(lf.X, lf.Y)
+			}
+		*/
 	}
 
 	f := ln.F{

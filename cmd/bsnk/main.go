@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Xe/bsnk/api"
 	"github.com/Xe/bsnk/snakes"
 	"github.com/facebookgo/flagenv"
 	"golang.org/x/net/trace"
@@ -53,8 +54,8 @@ func main() {
 	ctx := opname.With(context.Background(), "main")
 
 	http.HandleFunc("/", index)
-	http.Handle("/garen/", middleWareSpan("garen", snakes.Garen{}))
+	http.Handle("/garen/", middlewareSpan("garen", api.Server{Brain: snakes.Garen{}}))
 
-	ln.Log(ctx, f, ln.Info("booting"))
-	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, middlewareSpan(ex.HTTPLog(http.DefaultServeMux))))
+	ln.Log(ctx, ln.Info("booting"))
+	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, http.DefaultServeMux))
 }

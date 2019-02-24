@@ -246,20 +246,25 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	for _, sk := range decoded.Board.Snakes {
+		for _, pt := range sk.Body {
+			lf := pt.Left()
+			grid[lf.X][lf.Y] = 30
+			lf = pt.Right()
+			grid[lf.X][lf.Y] = 30
+			lf = pt.Up()
+			grid[lf.X][lf.Y] = 30
+			lf = pt.Down()
+			grid[lf.X][lf.Y] = 30
+		}
+
+	}
+
 	pf.SetGrid(grid)
 
 	for _, sk := range decoded.Board.Snakes {
 		for _, pt := range sk.Body {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
-
-			lf := pt.Left()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
-			lf = pt.Right()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
-			lf = pt.Up()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
-			lf = pt.Down()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
 		}
 
 		if sk.ID != decoded.You.ID {
@@ -273,7 +278,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			lf = pt.Down()
 			pf.AvoidAdditionalPoint(lf.X, lf.Y)
 		}
-
 	}
 
 	f := ln.F{

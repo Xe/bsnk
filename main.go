@@ -76,9 +76,9 @@ func main() {
 	}
 
 	b := bot{
-		rc: redis.NewClient(opt),
+		rc:          redis.NewClient(opt),
 		gameCounter: expvar.NewInt("games_begun"),
-		endCounter: expvar.NewInt("games_ended"),
+		endCounter:  expvar.NewInt("games_ended"),
 		moveCounter: expvar.NewInt("moves_made"),
 		pingCounter: expvar.NewInt("ping_counter"),
 	}
@@ -106,10 +106,10 @@ func main() {
 }
 
 type bot struct {
-	rc *redis.Client
+	rc          *redis.Client
 	gameCounter *expvar.Int
 	moveCounter *expvar.Int
-	endCounter *expvar.Int
+	endCounter  *expvar.Int
 	pingCounter *expvar.Int
 }
 
@@ -129,7 +129,6 @@ func (b bot) start(res http.ResponseWriter, req *http.Request) {
 		"board_x":   decoded.Board.Width,
 		"my_health": decoded.You.Health,
 	}
-
 
 	b.gameCounter.Add(1)
 
@@ -157,8 +156,8 @@ func (b bot) start(res http.ResponseWriter, req *http.Request) {
 	id, err := rc.XAdd(&redis.XAddArgs{
 		Stream: decoded.Game.ID,
 		Values: map[string]interface{}{
-			"turn": decoded.Turn,
-			"data": base64.StdEncoding.EncodeToString(data),
+			"turn":  decoded.Turn,
+			"data":  base64.StdEncoding.EncodeToString(data),
 			"color": clr,
 		},
 	}).Result()
@@ -169,6 +168,20 @@ func (b bot) start(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ln.Log(ctx, f, ln.Info("starting game"))
+}
+
+func manhattan(l, r api.Coord) float64 {
+	absX := r.X - l.X
+	if absX < 0 {
+		absX = -absX
+	}
+
+	absY := r.Y - l.Y
+	if absY < 0 {
+		absY = -absY
+	}
+
+	return float64(absX + absY)
 }
 
 func (b bot) move(res http.ResponseWriter, req *http.Request) {
@@ -186,9 +199,43 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var pickDir string
 
 	directions := []string{"up", "left", "down", "right"}
-	pickDir = directions[decoded.Turn%len(directions)]
 
-	f := 		ln.F{
+	me := decoded.You.Body[0]
+	var foundTarget bool
+	var target api.Coord
+	var distance float64 = 99999999999
+
+	for _, fd := range decoded.Board.Food {
+		if sc := manhattan(me, fd); sc < distance {
+			distance = sc
+			target = fd
+			foundTarget = true
+		}
+	}
+
+	if foundTarget {
+		xd := target.X - me.X
+		yd := target.Y - me.Y
+		if xd > yd {
+			// x is bigger
+			if xd >= 0 {
+				pickDir = "right"
+			} else {
+				pickDir = "left"
+			}
+		} else {
+			// y is bigger
+			if yd >= 0 {
+				pickDir = "up"
+			} else {
+				pickDir = "down"
+			}
+		}
+	} else {
+		pickDir = directions[decoded.Turn%len(directions)]
+	}
+
+	f := ln.F{
 		"game_id":   decoded.Game.ID,
 		"turn":      decoded.Turn,
 		"board_y":   decoded.Board.Height,
@@ -213,8 +260,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	id, err := rc.XAdd(&redis.XAddArgs{
 		Stream: decoded.Game.ID,
 		Values: map[string]interface{}{
-			"turn": decoded.Turn,
-			"data": base64.StdEncoding.EncodeToString(data),
+			"turn":   decoded.Turn,
+			"data":   base64.StdEncoding.EncodeToString(data),
 			"picked": pickDir,
 		},
 	}).Result()
@@ -233,7 +280,7 @@ func logCoords(pfx string, coord api.Coord) ln.F {
 	}
 }
 
-func  (b bot) end(res http.ResponseWriter, req *http.Request) {
+func (b bot) end(res http.ResponseWriter, req *http.Request) {
 	b.endCounter.Add(1)
 	return
 }

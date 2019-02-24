@@ -228,6 +228,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var target api.Coord
 
 	switch {
+	case decoded.Turn < 20:
+		// random target
+		target = api.Coord{
+			X: rand.Intn(decoded.Board.Width),
+			Y: rand.Intn(decoded.Board.Height),
+		}
+
 	default:
 		target = selectFood(decoded)
 	}
@@ -253,13 +260,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
 
 			lf := pt.Left()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
 			lf = pt.Right()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
 			lf = pt.Up()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
 			lf = pt.Down()
-			pf.SetAdditionalPointCost(lf.X, lf.Y, 30)
+			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
 		}
 	}
 
@@ -268,7 +275,7 @@ retry:
 	if err != nil {
 		ln.Error(ctx, err)
 		target = api.Coord{
-			X: decoded.Turn % decoded.Board.Width,
+			X: rand.Intn(decoded.Board.Width),
 			Y: rand.Intn(decoded.Board.Height),
 		}
 		goto retry

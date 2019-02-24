@@ -28,6 +28,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	}
 
 	ln.WithF(ctx, logCoords("target", target))
+	ln.Log(ctx, ln.Info("found_target"))
 
 	g := paths.NewGrid(decoded.Board.Width, decoded.Board.Height)
 
@@ -39,12 +40,15 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	}
 
 	path := g.GetPath(g.Get(me[0].X, me[0].Y), g.Get(target.X, target.Y), false)
-	t := path.Next()
-	immedTarget := api.Coord{
-		X: t.X,
-		Y: t.Y,
+	if len(path.Cells) != 0 {
+		t := path.Next()
+		immedTarget := api.Coord{
+			X: t.X,
+			Y: t.Y,
+		}
+		pickDir = me[0].Dir(immedTarget)
+		ln.Log(ctx, ln.Info("making move"), logCoords("immed_target", immedTarget), ln.F{"pick_dir": pickDir})
 	}
-	pickDir = me[0].Dir(immedTarget)
 
 	return &api.MoveResponse{
 		Move: pickDir,

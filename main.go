@@ -250,7 +250,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		"right": decoded.Board.IsDeadly(me[0].Right()),
 	}
 
-	if !allowableDirs[pickDir] {
+	if allowableDirs[pickDir] {
 		for k, v := range allowableDirs {
 			if !v {
 				pickDir = k

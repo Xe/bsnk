@@ -54,19 +54,19 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		}
 	}
 
-	path, err := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
-	if err != nil {
-		for _, place := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Right()} {
-			if !decoded.Board.IsDeadly(place) {
-				pickDir = me[0].Dir(place)
-			}
-		}
-	} else {
+	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+	if len(path) >= 2 {
 		pretty.Println(path)
 		pickDir = me[0].Dir(api.Coord{
 			X: path[1].X,
 			Y: path[1].Y,
 		})
+	} else {
+		for _, place := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Right()} {
+			if !decoded.Board.IsDeadly(place) {
+				pickDir = me[0].Dir(place)
+			}
+		}
 	}
 
 	return &api.MoveResponse{

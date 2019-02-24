@@ -260,7 +260,7 @@ retry:
 		ln.Error(ctx, err)
 		target = api.Coord{
 			X: decoded.Turn % decoded.Board.Width,
-			Y: decoded.Board.Height - 2,
+			Y: rand.Intn(decoded.Board.Height),
 		}
 		goto retry
 	}

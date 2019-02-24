@@ -230,7 +230,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	} else {
 		// y is bigger
-		if yd >= 0 {
+		if yd <= 0 {
 			pickDir = "up"
 		} else {
 			pickDir = "down"

@@ -2,10 +2,12 @@ package snakes
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 
 	"github.com/Xe/bsnk/api"
 	"github.com/prettymuchbryce/goeasystar"
+	"within.website/ln"
 )
 
 type Greedy struct{}
@@ -24,6 +26,8 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	if len(decoded.Board.Food) == 0 {
 		target = me[len(me)-1]
 	}
+
+	ln.WithF(ctx, logCoords("target", target))
 
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()
@@ -101,4 +105,10 @@ func selectFood(gs api.SnakeRequest) api.Coord {
 	}
 
 	return target
+}
+
+func logCoords(pfx string, coord api.Coord) ln.F {
+	return ln.F{
+		pfx + "_x,y": fmt.Sprintf("(%d,%d)", coord.X, coord.Y),
+	}
 }

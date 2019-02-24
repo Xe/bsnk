@@ -39,17 +39,19 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := ln.WithF(r.Context(), decoded.F())
+
 	switch filepath.Base(r.URL.Path) {
 	case "start":
-		ctx := opname.With(r.Context(), "start-game")
+		ctx := opname.With(ctx, "start-game")
 		result, err = s.Brain.Start(ctx, decoded)
 		ln.Log(ctx, decoded, result)
 	case "move":
-		ctx := opname.With(r.Context(), "move")
+		ctx := opname.With(ctx, "move")
 		result, err = s.Brain.Move(ctx, decoded)
 		ln.Log(ctx, decoded, result)
 	case "end":
-		ctx := opname.With(r.Context(), "end")
+		ctx := opname.With(ctx, "end")
 		err = s.Brain.End(ctx, decoded)
 		ln.Log(ctx, decoded)
 	}

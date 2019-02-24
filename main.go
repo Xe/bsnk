@@ -295,11 +295,12 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 				pickDir = me[0].Dir(cd)
 			}
 		}
+	} else {
+		pickDir = me[0].Dir(api.Coord{
+			X: path[i].X,
+			Y: path[i].Y,
+		})
 	}
-	pickDir = me[0].Dir(api.Coord{
-		X: path[i].X,
-		Y: path[i].Y,
-	})
 
 	f["picking"] = pickDir
 	f["distance"] = manhattan(me[0], target)

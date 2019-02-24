@@ -312,12 +312,14 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	}
 
+	i := 0
 	pickDir = me[0].Dir(api.Coord{
-		X: path[1].X,
-		Y: path[1].Y,
+		X: path[i].X,
+		Y: path[i].Y,
 	})
 
 	f["picking"] = pickDir
+	f["path"] = path
 	f["distance"] = manhattan(me[0], target)
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
 	f.Extend(logCoords("target", target))

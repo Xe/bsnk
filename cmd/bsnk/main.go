@@ -57,5 +57,5 @@ func main() {
 	http.Handle("/garen/", middlewareSpan("garen", api.Server{Brain: snakes.Garen{}}))
 
 	ln.Log(ctx, ln.Info("booting"))
-	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, http.DefaultServeMux))
+	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, ex.HTTPLog(http.DefaultServeMux)))
 }

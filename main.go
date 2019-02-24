@@ -188,14 +188,12 @@ func manhattan(l, r api.Coord) float64 {
 func selectFood(gs api.SnakeRequest) api.Coord {
 	me := gs.You.Body
 	var target api.Coord
-	var foundTarget bool
 	var distance float64 = 99999999999
 
 	for _, fd := range gs.Board.Food {
 		if sc := manhattan(me[0], fd); sc < distance {
 			distance = sc
 			target = fd
-			foundTarget = true
 		}
 	}
 

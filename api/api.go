@@ -96,6 +96,16 @@ func (b Board) IsDeadly(x Coord) bool {
 			if bd.Eq(x) {
 				return true
 			}
+			for _, st := range []Coord{
+				bd.Up(),
+				bd.Left(),
+				bd.Right(),
+				bd.Down(),
+			} {
+				if bd.Eq(st) {
+					return true
+				}
+			}
 		}
 	}
 

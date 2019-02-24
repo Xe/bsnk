@@ -22,18 +22,10 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	me := decoded.You.Body
 	var pickDir string
 
-	target := selectFood(decoded)
-	if len(decoded.Board.Food) == 0 {
-		target = me[len(me)-1]
-	}
-
-	ln.WithF(ctx, logCoords("target", target))
-	ln.Log(ctx, ln.Info("found_target"))
-
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()
 	pf.DisableDiagonals()
-	pf.SetAcceptableTiles([]int{1})
+	pf.SetAcceptableTiles([]int{1, 2})
 
 	var grid [][]int
 	grid = make([][]int, decoded.Board.Height)
@@ -44,11 +36,31 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		}
 	}
 
+	for _, sk := range decoded.Board.Snakes {
+		for _, pt := range sk.Body {
+			for _, st := range []api.Coord{
+				pt.Up(),
+				pt.Left(),
+				pt.Right(),
+				pt.Down(),
+			} {
+				grid[st.X][st.Y] = 2
+			}
+		}
+	}
+
+	target := selectFood(decoded)
+	if len(decoded.Board.Food) == 0 {
+		target = me[len(me)-1]
+	}
+
+	ln.WithF(ctx, logCoords("target", target))
+	ln.Log(ctx, ln.Info("found_target"))
+
 	pf.SetGrid(grid)
 
 	for _, sk := range decoded.Board.Snakes {
 		for _, pt := range sk.Body {
-			grid[pt.X][pt.Y] = 2
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
 		}
 	}
@@ -97,7 +109,7 @@ func selectFood(gs api.SnakeRequest) api.Coord {
 	var distance float64 = 99999999999
 
 	for _, fd := range gs.Board.Food {
-		if sc := manhattan(me[0], fd); sc < distance {
+		if sc := manhattan(me[0], fd); sc < distance && !gs.Board.IsDeadly(fd) {
 			distance = sc
 			target = fd
 			foundTarget = true

@@ -306,6 +306,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	}
 
 	f["move_path"] = path
+	f.Extend(logCoords("target", target))
 
 	ln.Log(ctx, f)
 	i := 1
@@ -324,7 +325,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	f["picking"] = pickDir
 	f["distance"] = manhattan(me[0], target)
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
-	f.Extend(logCoords("target", target))
 
 	respond(res, api.MoveResponse{
 		Move: pickDir,

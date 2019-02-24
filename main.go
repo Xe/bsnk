@@ -186,7 +186,7 @@ func manhattan(l, r api.Coord) float64 {
 	return float64(absX + absY)
 }
 
-func selectTarget(gs api.SnakeRequest) api.Coord {
+func selectFood(gs api.SnakeRequest) api.Coord {
 	me := gs.You.Body
 	var target api.Coord
 	var foundTarget bool
@@ -225,7 +225,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	me := decoded.You.Body
 	var pickDir string
-	target := selectTarget(decoded)
+	var target api.Coord
+
+	if decoded.You.Health > 50 {
+		target = me[len(me)-1]
+	} else {
+		target = selectFood(decoded)
+	}
 
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()

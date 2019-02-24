@@ -6,7 +6,7 @@ import (
 	"github.com/Xe/bsnk/api"
 )
 
-func TestSelectTarget(t *testing.T) {
+func TestSelectFood(t *testing.T) {
 	cases := []struct {
 		name          string
 		data          api.SnakeRequest
@@ -74,7 +74,7 @@ func TestSelectTarget(t *testing.T) {
 
 	for _, cs := range cases {
 		t.Run(cs.name, func(t *testing.T) {
-			target := selectTarget(cs.data)
+			target := selectFood(cs.data)
 
 			if !target.Eq(cs.target) {
 				t.Errorf("wanted target: %s, got: %s", cs.target, target)

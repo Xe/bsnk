@@ -244,6 +244,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		"board_x":   decoded.Board.Width,
 		"my_health": decoded.You.Health,
 		"picking":   pickDir,
+		"xd":        xd,
+		"yd":        yd,
 	}
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
 

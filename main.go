@@ -261,6 +261,17 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 			lf = pt.Down()
 			pf.SetAdditionalPointCost(lf.X, lf.Y, 300)
 		}
+
+		pt := sk.Body[0]
+		lf := pt.Left()
+		pf.AvoidAdditionalPoint(lf.X, lf.Y)
+		lf = pt.Right()
+		pf.AvoidAdditionalPoint(lf.X, lf.Y)
+		lf = pt.Up()
+		pf.AvoidAdditionalPoint(lf.X, lf.Y)
+		lf = pt.Down()
+		pf.AvoidAdditionalPoint(lf.X, lf.Y)
+
 	}
 
 	path, err := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)

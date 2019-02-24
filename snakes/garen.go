@@ -22,6 +22,6 @@ func (g Garen) Move(ctx context.Context, sr api.SnakeRequest) (*api.MoveResponse
 	}, nil
 }
 
-func (g Garen) End(ctx context.Context, sr SnakeRequest) error {
+func (g Garen) End(ctx context.Context, sr api.SnakeRequest) error {
 	return nil
 }

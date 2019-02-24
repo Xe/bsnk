@@ -245,6 +245,11 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	}
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
 
+	if foundTarget {
+		f.Extend(logCoords("target", target))
+		f["target_distance"] = distance
+	}
+
 	respond(res, api.MoveResponse{
 		Move: pickDir,
 	})

@@ -291,6 +291,20 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		})
 	}
 
+	if pickDir == "" {
+		target = decoded.Board.Snakes[0].Body[0]
+		path, err = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+		if err != nil {
+			dirs := []string{"up", "down", "left", "right"}
+			pickDir = dirs[rand.Intn(4)] // idk lol
+		} else {
+			pickDir = me[0].Dir(api.Coord{
+				X: path[1].X,
+				Y: path[1].Y,
+			})
+		}
+	}
+
 	f := ln.F{
 		"game_id":   decoded.Game.ID,
 		"turn":      decoded.Turn,

@@ -251,13 +251,13 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		if sk.ID != decoded.You.ID {
 			pt := sk.Body[0]
 			lf := pt.Left()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
+			pf.SetAdditionalCost(lf.X, lf.Y, 2)
 			lf = pt.Right()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
+			pf.SetAdditionalCost(lf.X, lf.Y, 2)
 			lf = pt.Up()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
+			pf.SetAdditionalCost(lf.X, lf.Y, 2)
 			lf = pt.Down()
-			pf.AvoidAdditionalPoint(lf.X, lf.Y)
+			pf.SetAdditionalCost(lf.X, lf.Y, 2)
 		}
 	}
 

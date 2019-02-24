@@ -1,13 +1,15 @@
 package snakes
 
 import (
+	"context"
+
 	"github.com/Xe/bsnk/api"
 )
 
-type Garen struct {}
+type Garen struct{}
 
 func (g Garen) Start(ctx context.Context, sr api.SnakeRequest) (*api.StartResponse, error) {
-	return &api.StartResponse {
+	return &api.StartResponse{
 		Color: "#FFFF00",
 	}, nil
 }
@@ -20,6 +22,6 @@ func (g Garen) Move(ctx context.Context, sr api.SnakeRequest) (*api.MoveResponse
 	}, nil
 }
 
-func (g Garen) End(ctx context.Context, sr.SnakeRequest) error {
+func (g Garen) End(ctx context.Context, sr SnakeRequest) error {
 	return nil
 }

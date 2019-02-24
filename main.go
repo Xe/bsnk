@@ -312,6 +312,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	}
 
+	f["path"] = path
+	ln.Log(ctx,f)
 	i := 0
 	pickDir = me[0].Dir(api.Coord{
 		X: path[i].X,

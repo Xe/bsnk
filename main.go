@@ -216,7 +216,7 @@ func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 		}
 	} else {
 		// y is bigger
-		if yd > 0 {
+		if yd < 0 {
 			immed = me[0].Up()
 		} else {
 			log.Printf("%v down %v %v %v", target, xd, yd, distance)
@@ -227,10 +227,10 @@ func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 	ln.Log(
 		context.Background(),
 		logCoords("me", me[0]),
-		logCoords("target",target),
+		logCoords("target", target),
 		logCoords("immed", immed),
 		ln.F{
-			"game_id": gs.Game.ID,
+			"game_id":   gs.Game.ID,
 			"direction": me[0].Dir(immed),
 		},
 	)

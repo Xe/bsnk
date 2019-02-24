@@ -228,6 +228,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var target api.Coord
 
 	switch {
+	case len(decoded.Board.Food) == 1:
+		target = me[len(me)-1]
 	default:
 		target = selectFood(decoded)
 	}
@@ -247,15 +249,15 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	}
 
 	for _, sk := range decoded.Board.Snakes {
-		for _, pt := range sk.Body {
+		for i, pt := range sk.Body {
 			lf := pt.Left()
-			grid[lf.X][lf.Y] = 30
+			grid[lf.X][lf.Y] = 30 * i
 			lf = pt.Right()
-			grid[lf.X][lf.Y] = 30
+			grid[lf.X][lf.Y] = 30 * i
 			lf = pt.Up()
-			grid[lf.X][lf.Y] = 30
-			lf = pt.Down()
-			grid[lf.X][lf.Y] = 30
+			grid[lf.X][lf.Y] = 30 * i
+			lf = pt.Down() 
+			grid[lf.X][lf.Y] = 30 * i
 		}
 
 	}
@@ -312,7 +314,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	}
 
-	f["bot_path"] = path
 	ln.Log(ctx,f)
 	i := 0
 	pickDir = me[0].Dir(api.Coord{

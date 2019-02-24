@@ -45,15 +45,23 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "start":
 		ctx := opname.With(ctx, "start-game")
 		result, err = s.Brain.Start(ctx, decoded)
-		ln.Log(ctx, decoded, result)
+		if err == nil {
+			ln.Log(ctx, decoded, result)
+		}
 	case "move":
 		ctx := opname.With(ctx, "move")
 		result, err = s.Brain.Move(ctx, decoded)
-		ln.Log(ctx, decoded, result)
+		if err == nil {
+			ln.Log(ctx, decoded, result)
+		}
 	case "end":
 		ctx := opname.With(ctx, "end")
 		err = s.Brain.End(ctx, decoded)
 		ln.Log(ctx, decoded)
+	}
+
+	if err != nil {
+		http.Error()
 	}
 
 	w.Header().Set("Content-Type", "application/json")

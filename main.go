@@ -228,13 +228,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var target api.Coord
 
 	switch {
-	case decoded.Turn < 20:
-		// random target
-		target = api.Coord{
-			X: rand.Intn(decoded.Board.Width),
-			Y: rand.Intn(decoded.Board.Height),
-		}
-
 	default:
 		target = selectFood(decoded)
 	}
@@ -270,7 +263,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-retry:
 	path, err := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 	if err != nil {
 		ln.Error(ctx, err)
@@ -278,7 +270,8 @@ retry:
 			X: rand.Intn(decoded.Board.Width),
 			Y: rand.Intn(decoded.Board.Height),
 		}
-		goto retry
+
+		path, err = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 	}
 	if len(path) != 0 {
 		pickDir = me[0].Dir(api.Coord{

@@ -50,7 +50,7 @@ func init() {
 
 func middlewareSpan(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sp := trace.New(*tracingFamily, "HTTP Request")
+		sp := trace.New(*tracingFamily, r.URL.Path)
 		defer sp.Finish()
 		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 		defer cancel()
@@ -155,7 +155,7 @@ func (b bot) start(res http.ResponseWriter, req *http.Request) {
 	rc := b.rc.WithContext(ctx)
 
 	id, err := rc.XAdd(&redis.XAddArgs{
-		Stream: decoded.Game.ID,
+		Stream: "game:" + decoded.Game.ID,
 		Values: map[string]interface{}{
 			"turn":  decoded.Turn,
 			"data":  base64.StdEncoding.EncodeToString(data),
@@ -185,24 +185,9 @@ func manhattan(l, r api.Coord) float64 {
 	return float64(absX + absY)
 }
 
-func (b bot) move(res http.ResponseWriter, req *http.Request) {
-	ctx := opname.With(req.Context(), "move")
-	rc := b.rc.WithContext(ctx)
-	decoded := api.SnakeRequest{}
-	err := api.DecodeSnakeRequest(req, &decoded)
-	if err != nil {
-		log.Printf("Bad move request: %v", err)
-		http.Error(res, "bad json", http.StatusBadRequest)
-		return
-	}
-
-	b.moveCounter.Add(1)
-
-	var pickDir string
-
+func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 	me := decoded.You.Body
 	var foundTarget bool
-	var target, immedTarget api.Coord
 	var distance float64 = 99999999999
 
 	for _, fd := range decoded.Board.Food {
@@ -226,37 +211,42 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		// x is bigger
 		if xd > 0 {
 			pickDir = "right"
-			immedTarget = me[0].Right()
+			immed = me[0].Right()
 		} else {
 			pickDir = "left"
-			immedTarget = me[0].Left()
+			immed = me[0].Left()
 		}
 	} else {
 		// y is bigger
 		if yd > 0 {
 			pickDir = "up"
-			immedTarget = me[0].Up()
+			immed = me[0].Up()
 		} else {
 			pickDir = "down"
-			immedTarget = me[0].Down()
+			immed = me[0].Down()
 		}
 	}
-	_ = immedTarget
 
-	allowableDirs := map[string]bool{
-		"up":    decoded.Board.IsDeadly(me[0].Up()),
-		"down":  decoded.Board.IsDeadly(me[0].Down()),
-		"left":  decoded.Board.IsDeadly(me[0].Left()),
-		"right": decoded.Board.IsDeadly(me[0].Right()),
+	return
+}
+
+func (b bot) move(res http.ResponseWriter, req *http.Request) {
+	ctx := opname.With(req.Context(), "move")
+	rc := b.rc.WithContext(ctx)
+	decoded := api.SnakeRequest{}
+	err := api.DecodeSnakeRequest(req, &decoded)
+	if err != nil {
+		log.Printf("Bad move request: %v", err)
+		http.Error(res, "bad json", http.StatusBadRequest)
+		return
 	}
 
-	if allowableDirs[pickDir] {
-		for k, v := range allowableDirs {
-			if !v {
-				pickDir = k
-			}
-		}
-	}
+	b.moveCounter.Add(1)
+
+	me := decoded.You.Body
+	var pickDir string
+	target, immed := selectTarget(decoded)
+	pickDir = me[0].Dir(immed)
 
 	f := ln.F{
 		"game_id":   decoded.Game.ID,
@@ -283,7 +273,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	}
 
 	id, err := rc.XAdd(&redis.XAddArgs{
-		Stream: decoded.Game.ID,
+		Stream: "game:" + decoded.Game.ID,
 		Values: map[string]interface{}{
 			"turn":   decoded.Turn,
 			"data":   base64.StdEncoding.EncodeToString(data),

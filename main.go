@@ -186,11 +186,11 @@ func manhattan(l, r api.Coord) float64 {
 }
 
 func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
-	me := decoded.You.Body
+	me := gs.You.Body
 	var foundTarget bool
 	var distance float64 = 99999999999
 
-	for _, fd := range decoded.Board.Food {
+	for _, fd := range gs.Board.Food {
 		if sc := manhattan(me[0], fd); sc < distance {
 			distance = sc
 			target = fd
@@ -200,8 +200,8 @@ func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 
 	if !foundTarget {
 		target = api.Coord{
-			X: rand.Intn(decoded.Board.Width),
-			Y: rand.Intn(decoded.Board.Height),
+			X: rand.Intn(gs.Board.Width),
+			Y: rand.Intn(gs.Board.Height),
 		}
 	}
 
@@ -210,19 +210,15 @@ func selectTarget(gs api.SnakeRequest) (target, immed api.Coord) {
 	if xd > yd {
 		// x is bigger
 		if xd > 0 {
-			pickDir = "right"
 			immed = me[0].Right()
 		} else {
-			pickDir = "left"
 			immed = me[0].Left()
 		}
 	} else {
 		// y is bigger
 		if yd > 0 {
-			pickDir = "up"
 			immed = me[0].Up()
 		} else {
-			pickDir = "down"
 			immed = me[0].Down()
 		}
 	}
@@ -255,12 +251,10 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		"board_x":   decoded.Board.Width,
 		"my_health": decoded.You.Health,
 		"picking":   pickDir,
-		"xd":        xd,
-		"yd":        yd,
+		"distance":  manhattan(me[0], target),
 	}
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
 	f.Extend(logCoords("target", target))
-	f["target_distance"] = distance
 
 	respond(res, api.MoveResponse{
 		Move: pickDir,

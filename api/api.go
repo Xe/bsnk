@@ -21,9 +21,9 @@ func (l Coord) Dir(r Coord) string {
 		return "right"
 	case l.X > r.X:
 		return "left"
-	case l.Y < r.Y:
-		return "up"
 	case l.Y > r.Y:
+		return "up"
+	case l.Y < r.Y:
 		return "down"
 	}
 

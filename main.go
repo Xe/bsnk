@@ -199,8 +199,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	var pickDir string
 
-	directions := []string{"up", "left", "down", "right"}
-
 	me := decoded.You.Body
 	var foundTarget bool
 	var target api.Coord

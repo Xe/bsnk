@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// Coord is an of X,Y coordinate pair.
 type Coord struct {
 	X int `json:"x"`
 	Y int `json:"y"`
@@ -15,6 +16,7 @@ func (l Coord) String() string {
 	return fmt.Sprintf("(%d,%d)", l.X, l.Y)
 }
 
+// Dir computes the net immediate direction from point l to point r
 func (l Coord) Dir(r Coord) string {
 	switch {
 	case l.X < r.X:
@@ -30,6 +32,7 @@ func (l Coord) Dir(r Coord) string {
 	return "how"
 }
 
+// Eq checks if one Coord equals another.
 func (l Coord) Eq(r Coord) bool {
 	return l.X == r.X && l.Y == r.Y
 }
@@ -62,6 +65,7 @@ func (l Coord) Down() Coord {
 	}
 }
 
+// Snake is a competitor.
 type Snake struct {
 	ID     string  `json:"id"`
 	Name   string  `json:"name"`
@@ -69,6 +73,7 @@ type Snake struct {
 	Body   []Coord `json:"body"`
 }
 
+// Board is the game board.
 type Board struct {
 	Height int     `json:"height"`
 	Width  int     `json:"width"`

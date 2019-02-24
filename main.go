@@ -291,8 +291,9 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		target = tail
 
 		path, err = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
-	}
-	if len(path) != 0 {
+		if err != nil {
+			ln.Error(ctx, err, f, ln.F{"retry": 1})
+		}
 		pickDir = me[0].Dir(api.Coord{
 			X: path[1].X,
 			Y: path[1].Y,
@@ -305,6 +306,12 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			dirs := []string{"up", "down", "left", "right"}
 			pickDir = dirs[rand.Intn(4)] // idk lol
+
+			for _, cd := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Down()} {
+				if !decoded.Board.IsDeadly(cd) {
+					pickDir = me[0].Dir(cd)
+				}
+			}
 		} else {
 			pickDir = me[0].Dir(api.Coord{
 				X: path[1].X,

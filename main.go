@@ -40,6 +40,10 @@ var (
 
 func init() {
 	ln.AddFilter(ex.NewGoTraceLogger())
+
+	trace.AuthRequest = func(_ *http.Request) (bool, bool) {
+		return true, true
+	}
 }
 
 func middlewareSpan(next http.Handler) http.Handler {

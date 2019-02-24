@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"within.website/ln"
 )
 
 // Coord is an of X,Y coordinate pair.
@@ -23,9 +25,9 @@ func (l Coord) Dir(r Coord) string {
 		return "right"
 	case l.X > r.X:
 		return "left"
-	case l.Y > r.Y:
-		return "up"
 	case l.Y < r.Y:
+		return "up"
+	case l.Y > r.Y:
 		return "down"
 	}
 
@@ -111,12 +113,34 @@ type SnakeRequest struct {
 	You   Snake `json:"you"`
 }
 
+func (sr SnakeRequest) F() ln.F {
+	return ln.F{
+		"game_id":      sr.Game.ID,
+		"turn":         sr.Turn,
+		"food_count":   len(sr.Board.Food),
+		"snakes_count": len(sr.Board.Snakes),
+		"my_health":    sr.You.Health,
+	}
+}
+
 type StartResponse struct {
 	Color string `json:"color,omitempty"`
 }
 
+func (s StartResponse) F() ln.F {
+	return ln.F{
+		"response_color": s.Color,
+	}
+}
+
 type MoveResponse struct {
 	Move string `json:"move"`
+}
+
+func (m MoveResponse) F() ln.F {
+	return ln.F{
+		"response_move": m.Move,
+	}
 }
 
 func DecodeSnakeRequest(req *http.Request, decoded *SnakeRequest) error {

@@ -28,7 +28,7 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var result interface{}
+	var result ln.Fer
 	var err error
 
 	decoded := SnakeRequest{}
@@ -50,6 +50,8 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ctx := opname.With(r.Context(), "end")
 		err = s.Brain.End(ctx, decoded)
 	}
+
+	ln.Log(r.Context(), decoded, result)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)

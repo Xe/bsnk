@@ -12,13 +12,13 @@ type Coord struct {
 
 func (l Coord) Dir(r Coord) string {
 	switch {
-	case l.X > r.X:
-		return "right"
 	case l.X < r.X:
+		return "right"
+	case l.X > r.X:
 		return "left"
-	case l.Y > r.Y:
+	case l.Y < r.Y:
 		return "up"
-	case l.Y < r.X:
+	case l.Y > r.Y:
 		return "down"
 	}
 

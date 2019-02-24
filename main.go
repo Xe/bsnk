@@ -227,9 +227,14 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var pickDir string
 	var target api.Coord
 
-	if decoded.You.Health > 50 {
+	switch {
+	case decoded.Turn < 4:
+		target = selectFood(decoded)
+
+	case decoded.You.Health > 50:
 		target = me[len(me)-1]
-	} else {
+
+	default:
 		target = selectFood(decoded)
 	}
 

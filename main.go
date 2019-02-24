@@ -293,31 +293,27 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		path, err = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 		if err != nil {
 			ln.Error(ctx, err, f, ln.F{"retry": 1})
+
+			target = decoded.Board.Snakes[0].Body[0]
+			path, err = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+			if err != nil {
+				for _, cd := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Down()} {
+					if !decoded.Board.IsDeadly(cd) {
+						pickDir = me[0].Dir(cd)
+					}
+				}
+			} else {
+				pickDir = me[0].Dir(api.Coord{
+					X: path[1].X,
+					Y: path[1].Y,
+				})
+			}
+
 		}
 		pickDir = me[0].Dir(api.Coord{
-			X: path[1].X,
-			Y: path[1].Y,
+			X: path[0].X,
+			Y: path[0].Y,
 		})
-	}
-
-	if pickDir == "" {
-		target = decoded.Board.Snakes[0].Body[0]
-		path, err = pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
-		if err != nil {
-			dirs := []string{"up", "down", "left", "right"}
-			pickDir = dirs[rand.Intn(4)] // idk lol
-
-			for _, cd := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Down(), me[0].Down()} {
-				if !decoded.Board.IsDeadly(cd) {
-					pickDir = me[0].Dir(cd)
-				}
-			}
-		} else {
-			pickDir = me[0].Dir(api.Coord{
-				X: path[1].X,
-				Y: path[1].Y,
-			})
-		}
 	}
 
 	f["picking"] = pickDir

@@ -8,13 +8,13 @@ import (
 
 type Garen struct{}
 
-func (g Garen) Start(ctx context.Context, sr api.SnakeRequest) (*api.StartResponse, error) {
+func (Garen) Start(ctx context.Context, sr api.SnakeRequest) (*api.StartResponse, error) {
 	return &api.StartResponse{
 		Color: "#FFFF00",
 	}, nil
 }
 
-func (g Garen) Move(ctx context.Context, sr api.SnakeRequest) (*api.MoveResponse, error) {
+func (Garen) Move(ctx context.Context, sr api.SnakeRequest) (*api.MoveResponse, error) {
 	directions := []string{"up", "left", "down", "right"}
 	pickDir := directions[sr.Turn%len(directions)]
 	return &api.MoveResponse{
@@ -22,6 +22,6 @@ func (g Garen) Move(ctx context.Context, sr api.SnakeRequest) (*api.MoveResponse
 	}, nil
 }
 
-func (g Garen) End(ctx context.Context, sr api.SnakeRequest) error {
+func (Garen) End(ctx context.Context, sr api.SnakeRequest) error {
 	return nil
 }

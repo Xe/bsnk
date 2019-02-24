@@ -55,6 +55,7 @@ func main() {
 
 	http.HandleFunc("/", index)
 	http.Handle("/garen/", middlewareSpan("garen", api.Server{Brain: snakes.Garen{}}))
+	http.Handle("/greedy/", middlewareSpan("greedy", api.Server{Brain: snakes.Greedy{}}))
 
 	ln.Log(ctx, ln.Info("booting"))
 	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, ex.HTTPLog(http.DefaultServeMux)))

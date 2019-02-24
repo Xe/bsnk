@@ -241,12 +241,15 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()
 	pf.DisableDiagonals()
-	pf.SetAcceptableTiles([]int{0})
+	pf.SetAcceptableTiles([]int{1})
 
 	var grid [][]int
 	grid = make([][]int, decoded.Board.Height)
 	for i := range grid {
 		grid[i] = make([]int, decoded.Board.Width)
+		for j := range grid[i] {
+			grid[i][j] = 1
+		}
 	}
 
 	pf.SetGrid(grid)

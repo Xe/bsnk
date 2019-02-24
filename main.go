@@ -286,7 +286,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	path, err := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 	if err != nil {
-		ln.Error(ctx, f, err)
+		ln.Error(ctx, err, f)
 		tail := me[len(me)-1]
 		target = tail
 

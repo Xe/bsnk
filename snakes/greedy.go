@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/Xe/bsnk/api"
+	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 )
 

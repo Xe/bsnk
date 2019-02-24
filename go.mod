@@ -9,6 +9,7 @@ require (
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
 	github.com/go-redis/redis v6.15.1+incompatible
 	github.com/kr/pretty v0.1.0
+	github.com/kr/pty v1.1.3 // indirect
 	github.com/onsi/ginkgo v1.7.0 // indirect
 	github.com/onsi/gomega v1.4.3 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
@@ -18,5 +19,5 @@ require (
 	golang.org/x/sys v0.0.0-20190222171317-cd391775e71e // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
-	within.website/ln v0.5.1
+	within.website/ln v0.5.2
 )

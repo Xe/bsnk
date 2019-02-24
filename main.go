@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Xe/bsnk/api"
 	"github.com/facebookgo/flagenv"
+	"github.com/go-redis/redis"
+	"golang.org/x/net/trace"
 	"within.website/ln"
 	"within.website/ln/ex"
 	"within.website/ln/opname"
@@ -27,18 +31,50 @@ func index(res http.ResponseWriter, req *http.Request) {
 }
 
 var (
-	port  = flag.String("port", "5000", "http port to listen on")
-	color = flag.String("color", "#c79dd7", "snake color code to use")
-	gitRev = flag.String("git-rev", "", "if set, use this git revision for the color code")
+	port          = flag.String("port", "5000", "http port to listen on")
+	color         = flag.String("color", "#c79dd7", "snake color code to use")
+	gitRev        = flag.String("git-rev", "", "if set, use this git revision for the color code")
+	redisURL      = flag.String("redis-url", "", "URL for redis storage of battlesnake info")
+	tracingFamily = flag.String("tracing-family", "sparklebutt", "tracing family to use")
 )
+
+func init() {
+	ln.AddFilter(ex.NewGoTraceLogger())
+}
+
+func middlewareSpan(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sp := trace.New(*tracingFamily, "HTTP Request")
+		defer sp.Finish()
+		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+		defer cancel()
+
+		ctx = trace.NewContext(ctx, sp)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
 
 func main() {
 	flagenv.Parse()
 	flag.Parse()
 
+	ctx := opname.With(context.Background(), "main")
+
+	if *redisURL == "" {
+		ln.Fatal(ctx, ln.Info("-redis-url not defined and is needed"))
+	}
+
+	opt, err := redis.ParseURL(*redisURL)
+	if err != nil {
+		ln.FatalErr(ctx, err)
+	}
+
+	b := bot{rc: redis.NewClient(opt)}
+
 	http.HandleFunc("/", index)
-	http.HandleFunc("/start", Start)
-	http.HandleFunc("/move", Move)
+	http.HandleFunc("/start", b.start)
+	http.HandleFunc("/move", b.move)
 	http.HandleFunc("/end", End)
 	http.HandleFunc("/ping", Ping)
 
@@ -46,26 +82,40 @@ func main() {
 		"port": *port,
 	}
 
-	ctx := opname.With(context.Background(), "main")
+	if *color != "" {
+		f["color"] = *color
+	}
+
+	if *gitRev != "" {
+		f["git-rev"] = *gitRev
+	}
+
 	ln.Log(ctx, f, ln.Info("booting"))
-	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, ex.HTTPLog(http.DefaultServeMux)), f)
+	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, middlewareSpan(ex.HTTPLog(http.DefaultServeMux))), f)
 }
 
-func Start(res http.ResponseWriter, req *http.Request) {
+type bot struct {
+	rc *redis.Client
+}
+
+func (b bot) start(res http.ResponseWriter, req *http.Request) {
 	decoded := api.SnakeRequest{}
 	err := api.DecodeSnakeRequest(req, &decoded)
 	if err != nil {
 		log.Printf("Bad start request: %v", err)
+		http.Error(res, "bad json", http.StatusBadRequest)
+		return
 	}
 
-	ctx := opname.With(req.Context(), "game-start")
-	ln.Log(ctx, ln.F{
+	f := ln.F{
 		"game_id":   decoded.Game.ID,
 		"turn":      decoded.Turn,
 		"board_y":   decoded.Board.Height,
 		"board_x":   decoded.Board.Width,
 		"my_health": decoded.You.Health,
-	})
+	} 
+
+	ctx := opname.With(req.Context(), "game-start")
 
 	clr := *color
 
@@ -77,10 +127,35 @@ func Start(res http.ResponseWriter, req *http.Request) {
 	respond(res, api.StartResponse{
 		Color: clr,
 	})
+
+	data, err := json.Marshal(decoded)
+	if err != nil {
+		// should not happen
+		panic(err)
+	}
+
+	rc := b.rc.WithContext(ctx)
+
+	id, err := rc.XAdd(&redis.XAddArgs{
+		Stream: decoded.Game.ID,
+		Values: map[string]interface{}{
+			"turn": decoded.Turn,
+			"data": base64.StdEncoding.EncodeToString(data),
+			"color": clr,
+		},
+	}).Result()
+	if err != nil {
+		ln.Error(ctx, err, ln.Info("can't add to stream"))
+	} else {
+		f["stream_id"] = id
+	}
+
+	ln.Log(ctx, f, ln.Info("starting game"))
 }
 
-func Move(res http.ResponseWriter, req *http.Request) {
+func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	ctx := opname.With(req.Context(), "move")
+	rc := b.rc.WithContext(ctx)
 	decoded := api.SnakeRequest{}
 	err := api.DecodeSnakeRequest(req, &decoded)
 	if err != nil {
@@ -107,6 +182,31 @@ func Move(res http.ResponseWriter, req *http.Request) {
 	respond(res, api.MoveResponse{
 		Move: pickDir,
 	})
+
+	data, err := json.Marshal(decoded)
+	if err != nil {
+		// should not happen
+		panic(err)
+	}
+
+	rc := b.rc.WithContext(ctx)
+
+	id, err := rc.XAdd(&redis.XAddArgs{
+		Stream: decoded.Game.ID,
+		Values: map[string]interface{}{
+			"turn": decoded.Turn,
+			"data": base64.StdEncoding.EncodeToString(data),
+			"picked", pickDir,
+		},
+	}).Result()
+	if err != nil {
+		ln.Error(ctx, err, ln.Info("can't add to stream"))
+	} else {
+		f["stream_id"] = id
+	}
+
+	ln.Log(ctx, f, ln.Info("starting game"))
+
 }
 
 func logCoords(pfx string, coord api.Coord) ln.F {

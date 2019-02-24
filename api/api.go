@@ -71,6 +71,25 @@ type Board struct {
 	Snakes []Snake `json:"snakes"`
 }
 
+func (b Board) IsDeadly(x Coord) bool {
+	switch {
+	case x.X >= b.Width:
+		return true
+	case x.Y >= b.Height:
+		return true
+	}
+
+	for _, sn := range b.Snakes {
+		for _, bd := range sn.Body {
+			if bd.Eq(x) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 type Game struct {
 	ID string `json:"id"`
 }

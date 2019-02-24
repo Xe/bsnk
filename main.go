@@ -202,7 +202,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	me := decoded.You.Body
 	var foundTarget bool
-	var target api.Coord
+	var target, immedTarget api.Coord
 	var distance float64 = 99999999999
 
 	for _, fd := range decoded.Board.Food {
@@ -226,15 +226,35 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		// x is bigger
 		if xd > 0 {
 			pickDir = "right"
+			immedTarget = me[0].Right()
 		} else {
 			pickDir = "left"
+			immedTarget = me[0].Left()
 		}
 	} else {
 		// y is bigger
 		if yd < 0 {
 			pickDir = "up"
+			immedTarget = me[0].Up()
 		} else {
 			pickDir = "down"
+			immedTarget = me[0].Down()
+		}
+	}
+	_ = immedTarget
+
+	allowableDirs := map[string]bool{
+		"up":    decoded.Board.IsDeadly(me[0].Up()),
+		"down":  decoded.Board.IsDeadly(me[0].Down()),
+		"left":  decoded.Board.IsDeadly(me[0].Left()),
+		"right": decoded.Board.IsDeadly(me[0].Right()),
+	}
+
+	if !allowableDirs[pickDir] {
+		for k, v := range allowableDirs {
+			if !v {
+				pickDir = k
+			}
 		}
 	}
 

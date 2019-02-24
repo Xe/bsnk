@@ -276,9 +276,17 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 
 	}
 
+	f := ln.F{
+		"game_id":   decoded.Game.ID,
+		"turn":      decoded.Turn,
+		"board_y":   decoded.Board.Height,
+		"board_x":   decoded.Board.Width,
+		"my_health": decoded.You.Health,
+	}
+
 	path, err := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 	if err != nil {
-		ln.Error(ctx, err)
+		ln.Error(ctx, f, err)
 		tail := me[len(me)-1]
 		target = tail
 
@@ -305,15 +313,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	f := ln.F{
-		"game_id":   decoded.Game.ID,
-		"turn":      decoded.Turn,
-		"board_y":   decoded.Board.Height,
-		"board_x":   decoded.Board.Width,
-		"my_health": decoded.You.Health,
-		"picking":   pickDir,
-		"distance":  manhattan(me[0], target),
-	}
+	f["picking"] = pickDir
+	f["distance"] = manhattan(me[0], target)
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
 	f.Extend(logCoords("target", target))
 

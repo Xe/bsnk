@@ -228,9 +228,6 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 	var target api.Coord
 
 	switch {
-	case decoded.You.Health > 50:
-		target = decoded.Board.Snakes[0].Body[0]
-
 	default:
 		target = selectFood(decoded)
 	}

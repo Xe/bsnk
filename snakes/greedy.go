@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/SolarLune/paths"
 	"github.com/Xe/bsnk/api"
-	"github.com/kr/pretty"
+	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 )
 
@@ -31,25 +30,34 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	ln.WithF(ctx, logCoords("target", target))
 	ln.Log(ctx, ln.Info("found_target"))
 
-	g := paths.NewGrid(decoded.Board.Width, decoded.Board.Height)
+	pf := goeasystar.NewPathfinder()
+	pf.DisableCornerCutting()
+	pf.DisableDiagonals()
+	pf.SetAcceptableTiles([]int{1})
 
-	for _, sk := range decoded.Board.Snakes {
-		for _, pt := range sk.Body {
-			c := g.Get(pt.X, pt.Y)
-			c.Walkable = false
+	var grid [][]int
+	grid = make([][]int, decoded.Board.Height)
+	for i := range grid {
+		grid[i] = make([]int, decoded.Board.Width)
+		for j := range grid[i] {
+			grid[i][j] = 1
 		}
 	}
 
-	path := g.GetPath(g.Get(me[0].X, me[0].Y), g.Get(target.X, target.Y), false)
-	pretty.Println(path)
-	if len(path.Cells) != 0 {
-		t := path.Next()
-		immedTarget := api.Coord{
-			X: t.X,
-			Y: t.Y,
+	pf.SetGrid(grid)
+
+	for _, sk := range decoded.Board.Snakes {
+		for _, pt := range sk.Body {
+			pf.AvoidAdditionalPoint(pt.X, pt.Y)
 		}
-		pickDir = me[0].Dir(immedTarget)
-		ln.Log(ctx, ln.Info("making move"), logCoords("immed_target", immedTarget), ln.F{"pick_dir": pickDir})
+	}
+
+	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+	if len(path) != 0 {
+		pickDir = me[0].Dir(api.Coord{
+			X: path[1].X,
+			Y: path[1].Y,
+		})
 	}
 
 	return &api.MoveResponse{

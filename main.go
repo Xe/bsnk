@@ -305,7 +305,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	f["path"] = path
+	f["move_path"] = path
 
 	ln.Log(ctx, f)
 	i := 1

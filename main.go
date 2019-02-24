@@ -233,7 +233,7 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		}
 	} else {
 		// y is bigger
-		if yd < 0 {
+		if yd > 0 {
 			pickDir = "up"
 			immedTarget = me[0].Up()
 		} else {
@@ -269,11 +269,8 @@ func (b bot) move(res http.ResponseWriter, req *http.Request) {
 		"yd":        yd,
 	}
 	f.Extend(logCoords("my_head", decoded.You.Body[0]))
-
-	if foundTarget {
-		f.Extend(logCoords("target", target))
-		f["target_distance"] = distance
-	}
+	f.Extend(logCoords("target", target))
+	f["target_distance"] = distance
 
 	respond(res, api.MoveResponse{
 		Move: pickDir,

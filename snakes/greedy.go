@@ -3,7 +3,6 @@ package snakes
 import (
 	"context"
 	"fmt"
-	"math/rand"
 
 	"github.com/Xe/bsnk/api"
 	"github.com/prettymuchbryce/goeasystar"
@@ -49,10 +48,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		}
 	}
 
-	target := selectFood(decoded)
-	if len(decoded.Board.Food) == 0 {
-		target = me[len(me)-1]
-	}
+	target := selectGreedy(decoded)
 
 	ln.WithF(ctx, logCoords("target", target))
 	ln.Log(ctx, ln.Info("found_target"))
@@ -114,7 +110,7 @@ func manhattan(l, r api.Coord) float64 {
 	return float64(absX + absY)
 }
 
-func selectFood(gs api.SnakeRequest) api.Coord {
+func selectGreedy(gs api.SnakeRequest) api.Coord {
 	me := gs.You.Body
 	var target api.Coord
 	var foundTarget bool
@@ -129,9 +125,11 @@ func selectFood(gs api.SnakeRequest) api.Coord {
 	}
 
 	if !foundTarget {
-		target = api.Coord{
-			X: rand.Intn(gs.Board.Width),
-			Y: rand.Intn(gs.Board.Height),
+		tail := me[len(me)-1]
+		for _, place := range []api.Coord{tail.Up(), tail.Down(), tail.Left(), tail.Right()} {
+			if !gs.Board.IsDeadly(place) {
+				target = place
+			}
 		}
 	}
 

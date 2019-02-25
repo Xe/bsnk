@@ -10,14 +10,18 @@ import (
 	"within.website/ln"
 )
 
+// Greedy is a greedy snake AI. It will try to get as long as it can as fast as
+// it can.
 type Greedy struct{}
 
+// Start starts a game.
 func (Greedy) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
 	return &api.StartResponse{
 		Color: "#c79dd7",
 	}, nil
 }
 
+// Move responds with the snake's movements for a given Turn.
 func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
 	me := decoded.You.Body
 	var pickDir string
@@ -25,7 +29,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()
 	pf.DisableDiagonals()
-	pf.SetAcceptableTiles([]int{1, 2})
+	pf.SetAcceptableTiles([]int{1, 2, 5})
 
 	var grid [][]int
 	grid = make([][]int, decoded.Board.Height)
@@ -61,7 +65,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 					pt.Down(),
 					pt.Down().Down(),
 				} {
-					pf.SetAdditionalPointCost(st.X, st.Y, 2)
+					pf.SetAdditionalPointCost(st.X, st.Y, 5)
 				}
 			}
 		}
@@ -86,6 +90,7 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	}, nil
 }
 
+// End ends a game.
 func (Greedy) End(ctx context.Context, sr api.SnakeRequest) error {
 	return nil
 }

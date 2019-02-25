@@ -36,19 +36,6 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		}
 	}
 
-	for _, sk := range decoded.Board.Snakes {
-		for _, pt := range sk.Body {
-			for _, st := range []api.Coord{
-				pt.Up(),
-				pt.Left(),
-				pt.Right(),
-				pt.Down(),
-			} {
-				grid[st.X][st.Y] = 2
-			}
-		}
-	}
-
 	target := selectFood(decoded)
 	if len(decoded.Board.Food) == 0 {
 		target = me[len(me)-1]
@@ -62,6 +49,15 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	for _, sk := range decoded.Board.Snakes {
 		for _, pt := range sk.Body {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
+
+			for _, st := range []api.Coord{
+				pt.Up(),
+				pt.Left(),
+				pt.Right(),
+				pt.Down(),
+			} {
+				pf.SetAdditionalPointCost(st.X, st.Y, 2)
+			}
 		}
 	}
 

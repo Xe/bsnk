@@ -50,13 +50,19 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		for _, pt := range sk.Body {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
 
-			for _, st := range []api.Coord{
-				pt.Up(),
-				pt.Left(),
-				pt.Right(),
-				pt.Down(),
-			} {
-				pf.SetAdditionalPointCost(st.X, st.Y, 2)
+			if sk.ID != decoded.You.ID {
+				for _, st := range []api.Coord{
+					pt.Up(),
+					pt.Up().Up(),
+					pt.Left(),
+					pt.Left().Left(),
+					pt.Right(),
+					pt.Right().Right(),
+					pt.Down(),
+					pt.Down().Down(),
+				} {
+					pf.SetAdditionalPointCost(st.X, st.Y, 2)
+				}
 			}
 		}
 	}

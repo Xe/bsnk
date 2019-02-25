@@ -29,14 +29,23 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()
 	pf.DisableDiagonals()
-	pf.SetAcceptableTiles([]int{1, 2, 5})
+	pf.SetAcceptableTiles([]int{1, 2, 5, 8})
 
 	var grid [][]int
 	grid = make([][]int, decoded.Board.Height)
 	for i := range grid {
 		grid[i] = make([]int, decoded.Board.Width)
+
 		for j := range grid[i] {
-			grid[i][j] = 1
+			if j == 0 || j == len(grid[i])-1 {
+				grid[i][j] = 8
+			}
+
+			if i == 0 || i == len(grid)-1 {
+				grid[i][j] = 8
+			} else {
+				grid[i][j] = 1
+			}
 		}
 	}
 
@@ -57,13 +66,9 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 			if sk.ID != decoded.You.ID {
 				for _, st := range []api.Coord{
 					pt.Up(),
-					pt.Up().Up(),
 					pt.Left(),
-					pt.Left().Left(),
 					pt.Right(),
-					pt.Right().Right(),
 					pt.Down(),
-					pt.Down().Down(),
 				} {
 					pf.SetAdditionalPointCost(st.X, st.Y, 5)
 				}

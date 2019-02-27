@@ -61,8 +61,14 @@ func main() {
 	ctx := opname.With(context.Background(), "main")
 
 	http.HandleFunc("/", index)
-	http.Handle("/garen/", middlewareSpan("garen", api.Server{Brain: snakes.Garen{}}))
-	http.Handle("/greedy/", middlewareSpan("greedy", api.Server{Brain: snakes.Greedy{}}))
+	http.Handle("/garen/", middlewareSpan("garen", api.Server{
+		Brain: snakes.Garen{},
+		Name: "garen",
+	}))
+	http.Handle("/greedy/", middlewareSpan("greedy", api.Server{
+		Brain: snakes.Greedy{},
+		Name: "greedy",
+	}))
 
 	ln.Log(ctx, ln.Info("booting"))
 	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, middlewareGitRev(ex.HTTPLog(http.DefaultServeMux))))

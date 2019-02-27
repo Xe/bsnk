@@ -20,11 +20,12 @@ type AI interface {
 // Server wraps an AI.
 type Server struct {
 	Brain AI
+	Name string
 }
 
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "OK", http.StatusOK)
+		http.Error(w, s.Name + " OK", http.StatusOK)
 		return
 	}
 
@@ -66,6 +67,7 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("X-Snake-AI", s.Name)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 	w.Write([]byte("\n"))

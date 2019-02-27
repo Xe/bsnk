@@ -43,6 +43,7 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := ln.WithF(r.Context(), decoded.F())
+	ctx = opname.With(ctx, s.Name)
 
 	switch filepath.Base(r.URL.Path) {
 	case "start":

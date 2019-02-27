@@ -25,7 +25,7 @@ type pyraTarget struct {
 
 func (pt pyraTarget) F() ln.F {
 	f := ln.F{
-		"target_score": pt.Score,
+		"target_score":        pt.Score,
 		"target_astar_length": pt.AstarLength,
 	}
 
@@ -38,7 +38,7 @@ func (pt pyraTarget) F() ln.F {
 // Start starts a game.
 func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
 	return &api.StartResponse{
-		Color: "#FFD600",
+		Color:    "#FFD600",
 		HeadType: "pixel",
 		TailType: "pixel",
 	}, nil
@@ -49,48 +49,7 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	me := decoded.You.Body
 	var pickDir string
 
-	pf := goeasystar.NewPathfinder()
-	pf.DisableCornerCutting()
-	pf.DisableDiagonals()
-	pf.SetAcceptableTiles([]int{1, 2, 5, 8})
-
-	var grid [][]int
-	grid = make([][]int, decoded.Board.Height)
-	for i := range grid {
-		grid[i] = make([]int, decoded.Board.Width)
-
-		for j := range grid[i] {
-			if j == 0 || j == len(grid[i])-1 {
-				grid[i][j] = 8
-			}
-
-			if i == 0 || i == len(grid)-1 {
-				grid[i][j] = 8
-			} else {
-				grid[i][j] = 1
-			}
-		}
-	}
-
-	pf.SetGrid(grid)
-
-	for _, sk := range decoded.Board.Snakes {
-		for _, pt := range sk.Body {
-			pf.AvoidAdditionalPoint(pt.X, pt.Y)
-
-			if sk.ID != decoded.You.ID {
-				for _, st := range []api.Coord{
-					pt.Up(),
-					pt.Left(),
-					pt.Right(),
-					pt.Down(),
-				} {
-					pf.SetAdditionalPointCost(st.X, st.Y, 5)
-				}
-			}
-		}
-	}
-
+	pf := makePathfinder(decoded)
 	target := p.selectTarget(ctx, decoded, pf)
 
 	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
@@ -193,6 +152,12 @@ skip:
 
 	var t pyraTarget
 	for _, pt := range targets {
+		for _, place := range []api.Coord{pt.Line.B.Up(), pt.Line.B.Down(), pt.Line.B.Left(), pt.Line.B.Right()} {
+			if gs.Board.IsDeadly(place) {
+				goto next
+			}
+		}
+
 		if pt.Score > t.Score {
 			// not possible unless t is uninitialized
 			if t.AstarLength == 0 {
@@ -204,6 +169,7 @@ skip:
 				t = pt
 			}
 		}
+	next:
 	}
 
 	ln.Log(ctx, ln.Info("found target"), t)

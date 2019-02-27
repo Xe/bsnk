@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Xe/bsnk/api"
-	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 )
 
@@ -25,52 +24,11 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	me := decoded.You.Body
 	var pickDir string
 
-	pf := goeasystar.NewPathfinder()
-	pf.DisableCornerCutting()
-	pf.DisableDiagonals()
-	pf.SetAcceptableTiles([]int{1, 2, 5, 8})
-
-	var grid [][]int
-	grid = make([][]int, decoded.Board.Height)
-	for i := range grid {
-		grid[i] = make([]int, decoded.Board.Width)
-
-		for j := range grid[i] {
-			if j == 0 || j == len(grid[i])-1 {
-				grid[i][j] = 8
-			}
-
-			if i == 0 || i == len(grid)-1 {
-				grid[i][j] = 8
-			} else {
-				grid[i][j] = 1
-			}
-		}
-	}
-
+	pf := makePathfinder(decoded)
 	target := selectGreedy(decoded)
 
 	ln.WithF(ctx, logCoords("target", target))
 	ln.Log(ctx, ln.Info("found_target"))
-
-	pf.SetGrid(grid)
-
-	for _, sk := range decoded.Board.Snakes {
-		for _, pt := range sk.Body {
-			pf.AvoidAdditionalPoint(pt.X, pt.Y)
-
-			if sk.ID != decoded.You.ID {
-				for _, st := range []api.Coord{
-					pt.Up(),
-					pt.Left(),
-					pt.Right(),
-					pt.Down(),
-				} {
-					pf.SetAdditionalPointCost(st.X, st.Y, 5)
-				}
-			}
-		}
-	}
 
 	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 	if len(path) >= 2 {

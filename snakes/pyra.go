@@ -22,10 +22,24 @@ type pyraTarget struct {
 	AstarLength int
 }
 
+func (pt pyraTarget) F() ln.F {
+	f := ln.F{
+		"target_score": pt.Score,
+		"target_astar_length": pt.AstarLength,
+	}
+
+	f.Extend(logCoords("my_head", pt.Line.A))
+	f.Extend(logCoords("target_coords", pt.Line.B))
+
+	return f
+}
+
 // Start starts a game.
 func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
 	return &api.StartResponse{
-		Color: "#c79dd7",
+		Color: "#FFD600",
+		HeadType: "pixel",
+		TailType: "pixel",
 	}, nil
 }
 

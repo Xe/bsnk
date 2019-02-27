@@ -11,7 +11,9 @@ type Erratic struct{}
 
 // Start starts a game.
 func (Erratic) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
-	return &api.StartResponse{}, nil
+	return &api.StartResponse{
+		Color: "#7FF3CF",
+	}, nil
 }
 
 // Move twitches around.

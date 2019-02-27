@@ -18,7 +18,12 @@ import (
 
 func index(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
-	res.Write([]byte("Battlesnake documentation can be found at <a href=\"https://docs.battlesnake.io\">https://docs.battlesnake.io</a>."))
+	res.Header().Set("Content-Type", "text/html")
+	res.Write([]byte("<p>Battlesnake documentation can be found at <a href=\"https://docs.battlesnake.io\">https://docs.battlesnake.io</a>.</p>"))
+}
+
+func health(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "OK", http.StatusOK)
 }
 
 func middlewareSpan(family string, next http.Handler) http.Handler {
@@ -61,6 +66,7 @@ func main() {
 	ctx := opname.With(context.Background(), "main")
 
 	http.HandleFunc("/", index)
+	http.HandleFunc("/health", health)
 	http.Handle("/garen/", middlewareSpan("garen", api.Server{
 		Brain: snakes.Garen{},
 		Name: "garen",

@@ -69,6 +69,10 @@ func main() {
 		Brain: snakes.Greedy{},
 		Name: "greedy",
 	}))
+	http.Handle("/erratic/", middlewareSpan("erratic", api.Server{
+		Brain: snakes.Erratic{},
+		Name: "erratic",
+	}))
 
 	ln.Log(ctx, ln.Info("booting"))
 	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, middlewareGitRev(ex.HTTPLog(http.DefaultServeMux))))

@@ -20,12 +20,12 @@ type AI interface {
 // Server wraps an AI.
 type Server struct {
 	Brain AI
-	Name string
+	Name  string
 }
 
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, s.Name + " OK", http.StatusOK)
+		http.Error(w, s.Name+" OK", http.StatusOK)
 		return
 	}
 

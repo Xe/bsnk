@@ -8,7 +8,7 @@ import (
 	"within.website/ln"
 )
 
-// Coord is an of X,Y coordinate pair.
+// Coord is an X,Y coordinate pair.
 type Coord struct {
 	X int `json:"x"`
 	Y int `json:"y"`
@@ -92,19 +92,15 @@ func (b Board) IsDeadly(x Coord) bool {
 	}
 
 	for _, sn := range b.Snakes {
-		for _, bd := range sn.Body {
-			if bd.Eq(x) {
+		bd := sn.Body[0]
+		for _, st := range []Coord{
+			bd.Up(),
+			bd.Left(),
+			bd.Right(),
+			bd.Down(),
+		} {
+			if bd.Eq(st) {
 				return true
-			}
-			for _, st := range []Coord{
-				bd.Up(),
-				bd.Left(),
-				bd.Right(),
-				bd.Down(),
-			} {
-				if bd.Eq(st) {
-					return true
-				}
 			}
 		}
 	}

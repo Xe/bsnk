@@ -47,8 +47,9 @@ func middlewareGitRev(next http.Handler) http.Handler {
 }
 
 var (
-	port   = flag.String("port", "5000", "http port to listen on")
-	gitRev = flag.String("git-rev", "", "if set, use this git revision for the color code")
+	port          = flag.String("port", "5000", "http port to listen on")
+	gitRev        = flag.String("git-rev", "", "if set, use this git revision for the color code")
+	pyraMinLength = flag.Int("pyra-min-length", 8, "min length for pyra")
 )
 
 func init() {
@@ -78,6 +79,12 @@ func main() {
 	http.Handle("/erratic/", middlewareSpan("erratic", api.Server{
 		Brain: snakes.Erratic{},
 		Name:  "erratic",
+	}))
+	http.Handle("/pyra/", middlewareSpan("pyra", api.Server{
+		Brain: snakes.Pyra{
+			MinLength: *pyraMinLength,
+		},
+		Name: "pyra",
 	}))
 
 	ln.Log(ctx, ln.Info("booting"))

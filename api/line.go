@@ -14,6 +14,21 @@ func (l Line) Distance() float64 {
 	)
 }
 
+// The Manhattan distance of a line.
+func (l Line) Manhattan() float64 {
+	absX := l.B.X - l.A.X
+	if absX < 0 {
+		absX = -absX
+	}
+
+	absY := l.B.Y - l.A.Y
+	if absY < 0 {
+		absY = -absY
+	}
+
+	return float64(absX + absY)
+}
+
 // Slope is the angle of the line in degrees.
 func (l Line) Slope() float64 {
 	return radiansToDegrees(math.Atan(float64(

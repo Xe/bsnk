@@ -34,6 +34,13 @@ func middlewareSpan(family string, next http.Handler) http.Handler {
 	})
 }
 
+func middlewareGitRev(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Git-Rev", *gitRev)
+		next.ServeHTTP(w, r)
+	})
+}
+
 var (
 	port   = flag.String("port", "5000", "http port to listen on")
 	gitRev = flag.String("git-rev", "", "if set, use this git revision for the color code")
@@ -58,5 +65,5 @@ func main() {
 	http.Handle("/greedy/", middlewareSpan("greedy", api.Server{Brain: snakes.Greedy{}}))
 
 	ln.Log(ctx, ln.Info("booting"))
-	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, ex.HTTPLog(http.DefaultServeMux)))
+	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, middlewareGitRev(ex.HTTPLog(http.DefaultServeMux))))
 }

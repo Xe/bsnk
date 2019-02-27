@@ -6,6 +6,7 @@ import (
 	"github.com/Xe/bsnk/api"
 	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
+	"within.website/ln/opname"
 )
 
 // Pyra is a slightly smarter version of Greedy.
@@ -90,9 +91,7 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		}
 	}
 
-	target := p.selectTarget(decoded, pf)
-	ln.WithF(ctx, logCoords("target", target))
-	ln.Log(ctx, ln.Info("found_target"))
+	target := p.selectTarget(ctx, decoded, pf)
 
 	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
 	pickDir = me[0].Dir(api.Coord{
@@ -110,7 +109,8 @@ func (Pyra) End(ctx context.Context, sr api.SnakeRequest) error {
 	return nil
 }
 
-func (p Pyra) selectTarget(gs api.SnakeRequest, pf *goeasystar.Pathfinder) api.Coord {
+func (p Pyra) selectTarget(ctx context.Context, gs api.SnakeRequest, pf *goeasystar.Pathfinder) api.Coord {
+	ctx = opname.With(ctx, "select-target")
 	me := gs.You.Body
 	var targets []pyraTarget
 	for _, fd := range gs.Board.Food {
@@ -183,6 +183,7 @@ skip:
 	}
 
 	if len(targets) == 0 {
+		ln.Log(ctx, ln.Info("no targets found"))
 		for _, place := range []api.Coord{me[0].Up(), me[0].Down(), me[0].Left(), me[0].Right()} {
 			if !gs.Board.IsDeadly(place) {
 				return place
@@ -204,6 +205,8 @@ skip:
 			}
 		}
 	}
+
+	ln.Log(ctx, ln.Info("found target"), t)
 
 	return t.Line.B
 }

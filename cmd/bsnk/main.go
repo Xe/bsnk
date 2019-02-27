@@ -69,17 +69,23 @@ func main() {
 	http.HandleFunc("/health", health)
 	http.Handle("/garen/", middlewareSpan("garen", api.Server{
 		Brain: snakes.Garen{},
-		Name: "garen",
+		Name:  "garen",
 	}))
 	http.Handle("/greedy/", middlewareSpan("greedy", api.Server{
 		Brain: snakes.Greedy{},
-		Name: "greedy",
+		Name:  "greedy",
 	}))
 	http.Handle("/erratic/", middlewareSpan("erratic", api.Server{
 		Brain: snakes.Erratic{},
-		Name: "erratic",
+		Name:  "erratic",
 	}))
 
 	ln.Log(ctx, ln.Info("booting"))
-	ln.FatalErr(ctx, http.ListenAndServe(":"+*port, middlewareGitRev(ex.HTTPLog(http.DefaultServeMux))))
+	ln.FatalErr(ctx, http.ListenAndServe(
+		":"+*port,
+		middlewareGitRev(ex.HTTPLog(http.DefaultServeMux)),
+	), ln.F{
+		"git_rev": *gitRev,
+		"port":    *port,
+	})
 }

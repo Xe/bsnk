@@ -92,14 +92,8 @@ func (b Board) IsDeadly(x Coord) bool {
 	}
 
 	for _, sn := range b.Snakes {
-		bd := sn.Body[0]
-		for _, st := range []Coord{
-			bd.Up(),
-			bd.Left(),
-			bd.Right(),
-			bd.Down(),
-		} {
-			if bd.Eq(st) {
+		for _, bd := range sn.Body {
+			if x.Eq(bd) {
 				return true
 			}
 		}

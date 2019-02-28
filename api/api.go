@@ -83,6 +83,7 @@ type Board struct {
 	Snakes []Snake `json:"snakes"`
 }
 
+// Inside checks if a point is inside the board.
 func (b Board) Inside(x Coord) bool {
 	switch {
 	case x.X >= b.Width:
@@ -119,6 +120,7 @@ func (b Board) DeadlyAdjacent(x Coord) []Coord {
 	return result
 }
 
+// IsDeadly checks if a point would kill a snake if it moved into it.
 func (b Board) IsDeadly(x Coord) bool {
 	if !b.Inside(x) {
 		return true

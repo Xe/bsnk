@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"net/http"
 	"path/filepath"
@@ -89,12 +90,31 @@ var (
 	redisURL      = flag.String("redis-url", "", "redis URL")
 )
 
+func createSnake(name string, ai api.AI) http.Handler {
+	return middlewareMetrics(name,
+		middlewareSpan(name, api.Server{
+			Brain: ai,
+			Name: name,
+		}),
+	)
+}
+
 func init() {
 	ln.AddFilter(ex.NewGoTraceLogger())
 
 	trace.AuthRequest = func(_ *http.Request) (bool, bool) {
 		return true, true
 	}
+}
+
+func vars(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	e := json.NewEncoder(w)
+	e.SetIndent("", "  ")
+	e.Encode(map[string]interface{}{
+		"git_rev": *gitRev,
+		"pyra_min_length": *pyraMinLength,
+	})
 }
 
 func main() {
@@ -110,29 +130,18 @@ func main() {
 	c := redis.NewClient(options)
 
 	http.HandleFunc("/", index)
+	http.HandleFunc("/vars", vars)
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/health", health)
-	http.Handle("/garen/", middlewareMetrics("garen", middlewareSpan("garen", api.Server{
-		Brain: snakes.Garen{},
-		Name:  "garen",
-	})))
-	http.Handle("/greedy/", middlewareMetrics("greedy", middlewareSpan("greedy", api.Server{
-		Brain: snakes.Greedy{
-			Redis: c,
-		},
-		Name: "greedy",
-	})))
-	http.Handle("/erratic/", middlewareMetrics("erratic", middlewareSpan("erratic", api.Server{
-		Brain: snakes.Erratic{},
-		Name:  "erratic",
-	})))
-	http.Handle("/pyra/", middlewareMetrics("pyra", middlewareSpan("pyra", api.Server{
-		Brain: snakes.Pyra{
-			Redis:     c,
-			MinLength: *pyraMinLength,
-		},
-		Name: "pyra",
-	})))
+	http.Handle("/garen/", createSnake("garen", snakes.Garen{}))
+	http.Handle("/greedy/", createSnake("greedy", snakes.Greedy{
+		Redis: c,
+	}))
+	http.Handle("/erratic/", createSnake("erratic", snakes.Erratic{}))
+	http.Handle("/pyra/", createSnake("pyra", snakes.Pyra{
+		Redis: c,
+		MinLength: *pyraMinLength,
+	}))
 
 	ln.Log(ctx, ln.Info("booting"))
 	ln.FatalErr(ctx, http.ListenAndServe(

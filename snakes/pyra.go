@@ -152,6 +152,7 @@ skip:
 
 	var t pyraTarget
 	for _, pt := range targets {
+		pt.Score = pt.Score - int(pt.Line.Manhattan())
 		for _, place := range []api.Coord{pt.Line.B.Up(), pt.Line.B.Down(), pt.Line.B.Left(), pt.Line.B.Right()} {
 			if gs.Board.IsDeadly(place) {
 				goto next

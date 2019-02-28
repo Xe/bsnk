@@ -70,7 +70,7 @@ func main() {
 
 	options, err := redis.ParseURL(*redisURL)
 	if err != nil {
-		ln.Fatal(err, ln.F{"redis_url": *redisURL})
+		ln.FatalErr(ctx, err, ln.F{"redis_url": *redisURL})
 	}
 	c := redis.NewClient(options)
 

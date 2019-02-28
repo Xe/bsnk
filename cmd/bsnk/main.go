@@ -94,7 +94,7 @@ func middlewareMetrics(family string, next http.Handler) http.Handler {
 		}
 	}
 
-	return promhttp.InstrumentHandlerDuration(hst.MustCurryWith(prometheus.Labels{"handler": family}), promhttp.InstrumentHandlerCounter(cnt, promhttp.InstrumentHandlerInFlight(gge, next)))
+	return promhttp.InstrumentHandlerDuration(hst, promhttp.InstrumentHandlerCounter(cnt, promhttp.InstrumentHandlerInFlight(gge, next)))
 }
 
 var (
@@ -123,6 +123,20 @@ func main() {
 		ln.FatalErr(ctx, err, ln.F{"redis_url": *redisURL})
 	}
 	c := redis.NewClient(options)
+
+	c.WrapProcess(func(old func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
+		hst := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+			Name: "redis_command_duration",
+			Help: "Redis command duration",
+		}, []string{"verb"})
+
+		return func(cmd redis.Cmder) error {
+			t0 := time.Now()
+			err := old(cmd)
+			hst.With(prometheus.Labels{"verb": cmd.Name()}).Observe(float64(time.Since(t0)))
+			return err
+		}
+	})
 
 	http.HandleFunc("/", index)
 	http.Handle("/metrics", promhttp.Handler())

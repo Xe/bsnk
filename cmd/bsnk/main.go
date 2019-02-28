@@ -55,7 +55,7 @@ func middlewareMetrics(family string, next http.Handler) http.Handler {
 			Name: family+"_handler_requests_total",
 			Help: "Total number of request/responses by HTTP status code.",
 		},
-		[]string{"handler", "code"},
+		[]string{"code"},
 	)
 	cnt.WithLabelValues("200")
 	cnt.WithLabelValues("500")
@@ -94,7 +94,12 @@ func middlewareMetrics(family string, next http.Handler) http.Handler {
 		}
 	}
 
-	return promhttp.InstrumentHandlerDuration(hst.MustCurryWith(prometheus.Labels{"handler": family}), promhttp.InstrumentHandlerCounter(cnt, promhttp.InstrumentHandlerInFlight(gge, next)))
+	return promhttp.InstrumentHandlerDuration(
+		hst.MustCurryWith(prometheus.Labels{"handler": family}),
+		promhttp.InstrumentHandlerCounter(cnt,
+			promhttp.InstrumentHandlerInFlight(gge, next),
+		),
+	)
 }
 
 var (

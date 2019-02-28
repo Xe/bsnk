@@ -10,7 +10,7 @@ type Line struct {
 // Distance is the net distance from A to B.
 func (l Line) Distance() float64 {
 	return math.Sqrt(
-		math.Pow(float64(l.B.X - l.A.X), 2) + math.Pow(float64(l.B.Y - l.A.Y), 2),
+		math.Pow(float64(l.B.X-l.A.X), 2) + math.Pow(float64(l.B.Y-l.A.Y), 2),
 	)
 }
 
@@ -32,7 +32,7 @@ func (l Line) Manhattan() float64 {
 // Slope is the angle of the line in degrees.
 func (l Line) Slope() float64 {
 	return radiansToDegrees(math.Atan(float64(
-		float64(l.B.Y - l.A.Y) / float64(l.B.X - l.A.X),
+		float64(l.B.Y-l.A.Y) / float64(l.B.X-l.A.X),
 	)))
 }
 

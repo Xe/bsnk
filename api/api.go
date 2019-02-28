@@ -91,6 +91,14 @@ func (b Board) Inside(x Coord) bool {
 		return false
 	}
 
+	if x.X < 0 {
+		return false
+	}
+
+	if x.Y < 0 {
+		return false
+	}
+
 	return true
 }
 
@@ -135,7 +143,7 @@ func (sr SnakeRequest) F() ln.F {
 }
 
 type StartResponse struct {
-	Color string `json:"color,omitempty"`
+	Color    string `json:"color,omitempty"`
 	HeadType string `json:"HeadType,omitempty"`
 	TailType string `json:"TailType,omitempty"`
 }

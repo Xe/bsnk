@@ -38,11 +38,17 @@ func makePathfinder(decoded api.SnakeRequest) *goeasystar.Pathfinder {
 			if sk.ID != decoded.You.ID {
 				for _, st := range []api.Coord{
 					pt.Up(),
+					pt.Up().Up(),
 					pt.Left(),
+					pt.Left().Left(),
 					pt.Right(),
+					pt.Right().Right(),
 					pt.Down(),
+					pt.Down().Down(),
 				} {
-					pf.SetAdditionalPointCost(st.X, st.Y, 5)
+					if decoded.Board.Inside(st) {
+						pf.SetAdditionalPointCost(st.X, st.Y, 5)
+					}
 				}
 			}
 		}

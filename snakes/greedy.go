@@ -2,15 +2,20 @@ package snakes
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 
 	"github.com/Xe/bsnk/api"
+	"github.com/go-redis/redis"
 	"within.website/ln"
 )
 
 // Greedy is a greedy snake AI. It will try to get as long as it can as fast as
 // it can.
-type Greedy struct{}
+type Greedy struct {
+	Redis *redis.Client
+}
 
 // Start starts a game.
 func (Greedy) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
@@ -20,11 +25,11 @@ func (Greedy) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartRespons
 }
 
 // Move responds with the snake's movements for a given Turn.
-func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
+func (g Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
 	me := decoded.You.Body
 	var pickDir string
 
-	pf := makePathfinder(decoded)
+	grid, pf := makePathfinder(decoded)
 	target := selectGreedy(decoded)
 
 	ln.WithF(ctx, logCoords("target", target))
@@ -41,6 +46,26 @@ func (Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 			if !decoded.Board.IsDeadly(place) {
 				pickDir = me[0].Dir(place)
 			}
+		}
+	}
+
+	data, err := json.Marshal(map[string]interface{}{
+		"input":    decoded,
+		"grid":     grid,
+		"target":   target,
+		"path":     path,
+		"pick_dir": pickDir,
+	})
+	if err == nil {
+		_, err = g.Redis.XAdd(&redis.XAddArgs{
+			Stream: "greedy:" + decoded.Game.ID,
+			Values: map[string]interface{}{
+				"state": base64.StdEncoding.EncodeToString(data),
+				"turn":  decoded.Turn,
+			},
+		}).Result()
+		if err != nil {
+			ln.Error(ctx, err)
 		}
 	}
 

@@ -7,7 +7,7 @@ import (
 )
 
 // Erratic is a particularly terrible AI.
-type Erratic struct{} 
+type Erratic struct{}
 
 // Start starts a game.
 func (Erratic) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
@@ -22,9 +22,9 @@ func (Erratic) Move(ctx context.Context, gs api.SnakeRequest) (*api.MoveResponse
 	var pickDir string
 
 	for place := range map[api.Coord]struct{}{
-		me[0].Up(): struct{}{},
-		me[0].Down(): struct{}{},
-		me[0].Left(): struct{}{},
+		me[0].Up():    struct{}{},
+		me[0].Down():  struct{}{},
+		me[0].Left():  struct{}{},
 		me[0].Right(): struct{}{},
 	} {
 		if gs.Board.Inside(place) && !gs.Board.IsDeadly(place) {

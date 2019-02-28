@@ -5,7 +5,7 @@ import (
 	"github.com/prettymuchbryce/goeasystar"
 )
 
-func makePathfinder(decoded api.SnakeRequest) *goeasystar.Pathfinder {
+func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) {
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()
 	pf.DisableDiagonals()
@@ -59,6 +59,7 @@ func makePathfinder(decoded api.SnakeRequest) *goeasystar.Pathfinder {
 
 		for _, pt := range sk.Body {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
+			grid[pt.X][pt.Y] = 9
 
 			if sk.ID != decoded.You.ID {
 				for _, st := range []api.Coord{
@@ -72,6 +73,7 @@ func makePathfinder(decoded api.SnakeRequest) *goeasystar.Pathfinder {
 					pt.Down().Down(),
 				} {
 					if decoded.Board.Inside(st) {
+						grid[st.X][st.Y] = 5
 						pf.SetAdditionalPointCost(st.X, st.Y, 5)
 					}
 				}
@@ -79,5 +81,5 @@ func makePathfinder(decoded api.SnakeRequest) *goeasystar.Pathfinder {
 		}
 	}
 
-	return pf
+	return grid, pf
 }

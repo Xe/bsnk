@@ -2,8 +2,11 @@ package snakes
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 
 	"github.com/Xe/bsnk/api"
+	"github.com/go-redis/redis"
 	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 	"within.website/ln/opname"
@@ -13,6 +16,7 @@ import (
 //
 // Struct memebers are configuration flags for the snake behavior.
 type Pyra struct {
+	Redis     *redis.Client
 	MinLength int
 }
 
@@ -49,14 +53,34 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	me := decoded.You.Body
 	var pickDir string
 
-	pf := makePathfinder(decoded)
+	grid, pf := makePathfinder(decoded)
 	target := p.selectTarget(ctx, decoded, pf)
 
-	path, _ := pf.FindPath(me[0].X, me[0].Y, target.X, target.Y)
+	path, _ := pf.FindPath(me[0].X, me[0].Y, target.Line.B.X, target.Line.B.Y)
 	pickDir = me[0].Dir(api.Coord{
 		X: path[1].X,
 		Y: path[1].Y,
 	})
+
+	data, err := json.Marshal(map[string]interface{}{
+		"input":    decoded,
+		"grid":     grid,
+		"target":   target,
+		"path":     path,
+		"pick_dir": pickDir,
+	})
+	if err == nil {
+		_, err = p.Redis.XAdd(&redis.XAddArgs{
+			Stream: "pyra:" + decoded.Game.ID,
+			Values: map[string]interface{}{
+				"state": base64.StdEncoding.EncodeToString(data),
+				"turn":  decoded.Turn,
+			},
+		}).Result()
+		if err != nil {
+			ln.Error(ctx, err)
+		}
+	}
 
 	return &api.MoveResponse{
 		Move: pickDir,
@@ -68,7 +92,7 @@ func (Pyra) End(ctx context.Context, sr api.SnakeRequest) error {
 	return nil
 }
 
-func (p Pyra) selectTarget(ctx context.Context, gs api.SnakeRequest, pf *goeasystar.Pathfinder) api.Coord {
+func (p Pyra) selectTarget(ctx context.Context, gs api.SnakeRequest, pf *goeasystar.Pathfinder) pyraTarget {
 	ctx = opname.With(ctx, "select-target")
 	me := gs.You.Body
 	var targets []pyraTarget
@@ -145,7 +169,12 @@ skip:
 		ln.Log(ctx, ln.Info("no targets found"))
 		for _, place := range []api.Coord{me[0].Up(), me[0].Down(), me[0].Left(), me[0].Right()} {
 			if !gs.Board.IsDeadly(place) {
-				return place
+				return pyraTarget{
+					Line: api.Line{
+						A: me[0],
+						B: place,
+					},
+				}
 			}
 		}
 	}
@@ -175,5 +204,5 @@ skip:
 
 	ln.Log(ctx, ln.Info("found target"), t)
 
-	return t.Line.B
+	return t
 }

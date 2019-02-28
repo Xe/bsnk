@@ -10,6 +10,7 @@ import (
 	"github.com/Xe/bsnk/api"
 	"github.com/Xe/bsnk/snakes"
 	"github.com/facebookgo/flagenv"
+	"github.com/go-redis/redis"
 	"golang.org/x/net/trace"
 	"within.website/ln"
 	"within.website/ln/ex"
@@ -50,6 +51,7 @@ var (
 	port          = flag.String("port", "5000", "http port to listen on")
 	gitRev        = flag.String("git-rev", "", "if set, use this git revision for the color code")
 	pyraMinLength = flag.Int("pyra-min-length", 8, "min length for pyra")
+	redisURL      = flag.String("redis-url", "", "redis URL")
 )
 
 func init() {
@@ -66,6 +68,12 @@ func main() {
 
 	ctx := opname.With(context.Background(), "main")
 
+	options, err := redis.ParseURL(*redisURL)
+	if err != nil {
+		ln.Fatal(err, ln.F{"redis_url": *redisURL})
+	}
+	c := redis.NewClient(options)
+
 	http.HandleFunc("/", index)
 	http.HandleFunc("/health", health)
 	http.Handle("/garen/", middlewareSpan("garen", api.Server{
@@ -73,8 +81,10 @@ func main() {
 		Name:  "garen",
 	}))
 	http.Handle("/greedy/", middlewareSpan("greedy", api.Server{
-		Brain: snakes.Greedy{},
-		Name:  "greedy",
+		Brain: snakes.Greedy{
+			Redis: c,
+		},
+		Name: "greedy",
 	}))
 	http.Handle("/erratic/", middlewareSpan("erratic", api.Server{
 		Brain: snakes.Erratic{},
@@ -82,6 +92,7 @@ func main() {
 	}))
 	http.Handle("/pyra/", middlewareSpan("pyra", api.Server{
 		Brain: snakes.Pyra{
+			Redis:     c,
 			MinLength: *pyraMinLength,
 		},
 		Name: "pyra",

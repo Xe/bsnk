@@ -83,6 +83,17 @@ type Board struct {
 	Snakes []Snake `json:"snakes"`
 }
 
+func (b Board) Inside(x Coord) bool {
+	switch {
+	case x.X >= b.Width:
+		return false
+	case x.Y >= b.Height:
+		return false
+	}
+
+	return true
+}
+
 func (b Board) IsDeadly(x Coord) bool {
 	switch {
 	case x.X >= b.Width:

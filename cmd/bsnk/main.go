@@ -49,6 +49,54 @@ func middlewareGitRev(next http.Handler) http.Handler {
 	})
 }
 
+func middlewareMetrics(family string, next http.Handler) http.Handler {
+	cnt := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: family+"_handler_requests_total",
+			Help: "Total number of request/responses by HTTP status code.",
+		},
+		[]string{"code"},
+	)
+	cnt.WithLabelValues("200")
+	cnt.WithLabelValues("500")
+	cnt.WithLabelValues("503")
+
+	if err := prometheus.Register(cnt); err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			cnt = are.ExistingCollector.(*prometheus.CounterVec)
+		} else {
+			panic(err)
+		}
+	}
+
+	hst := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: family+"_handler_duration",
+		Help: family+" handler request duration.",
+	}, []string{"handler", "method"})
+
+	if err := prometheus.Register(hst); err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			cnt = are.ExistingCollector.(*prometheus.CounterVec)
+		} else {
+			panic(err)
+		}
+	}
+
+	gge := prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: family+"_handler_requests_in_flight",
+		Help: "Current number of requests being served.",
+	})
+	if err := prometheus.Register(gge); err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			gge = are.ExistingCollector.(prometheus.Gauge)
+		} else {
+			panic(err)
+		}
+	}
+
+	return promhttp.InstrumentHandlerDuration(hst.MustCurryWith(prometheus.Labels{"handler": family}), promhttp.InstrumentHandlerCounter(cnt, promhttp.InstrumentHandlerInFlight(gge, next)))
+}
+
 var (
 	port          = flag.String("port", "5000", "http port to listen on")
 	gitRev        = flag.String("git-rev", "", "if set, use this git revision for the color code")
@@ -67,7 +115,6 @@ func init() {
 func main() {
 	flagenv.Parse()
 	flag.Parse()
-	prometheus.Register(prometheus.NewGoCollector())
 
 	ctx := opname.With(context.Background(), "main")
 
@@ -80,27 +127,27 @@ func main() {
 	http.HandleFunc("/", index)
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/health", health)
-	http.Handle("/garen/", middlewareSpan("garen", api.Server{
+	http.Handle("/garen/", middlewareMetrics("garen", middlewareSpan("garen", api.Server{
 		Brain: snakes.Garen{},
 		Name:  "garen",
-	}))
-	http.Handle("/greedy/", middlewareSpan("greedy", api.Server{
+	})))
+	http.Handle("/greedy/", middlewareMetrics("greedy", middlewareSpan("greedy", api.Server{
 		Brain: snakes.Greedy{
 			Redis: c,
 		},
 		Name: "greedy",
-	}))
-	http.Handle("/erratic/", middlewareSpan("erratic", api.Server{
+	})))
+	http.Handle("/erratic/", middlewareMetrics("erratic", middlewareSpan("erratic", api.Server{
 		Brain: snakes.Erratic{},
 		Name:  "erratic",
-	}))
-	http.Handle("/pyra/", middlewareSpan("pyra", api.Server{
+	})))
+	http.Handle("/pyra/", middlewareMetrics("pyra", middlewareSpan("pyra", api.Server{
 		Brain: snakes.Pyra{
 			Redis:     c,
 			MinLength: *pyraMinLength,
 		},
 		Name: "pyra",
-	}))
+	})))
 
 	ln.Log(ctx, ln.Info("booting"))
 	ln.FatalErr(ctx, http.ListenAndServe(

@@ -8,7 +8,6 @@ import (
 
 	"github.com/Xe/bsnk/api"
 	"github.com/go-redis/redis"
-	"github.com/prometheus/client_golang/prometheus"
 	"within.website/ln"
 )
 
@@ -20,7 +19,6 @@ type Greedy struct {
 
 // Start starts a game.
 func (Greedy) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
-	gamesStarted.With(prometheus.Labels{"brain": "greedy"}).Inc()
 	return &api.StartResponse{
 		Color: "#c79dd7",
 	}, nil
@@ -28,7 +26,6 @@ func (Greedy) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartRespons
 
 // Move responds with the snake's movements for a given Turn.
 func (g Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
-	movesMade.With(prometheus.Labels{"brain": "greedy"}).Inc()
 	me := decoded.You.Body
 	var pickDir string
 
@@ -80,7 +77,6 @@ func (g Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveRe
 
 // End ends a game.
 func (Greedy) End(ctx context.Context, sr api.SnakeRequest) error {
-	gamesEnded.With(prometheus.Labels{"brain": "greedy"}).Inc()
 	return nil
 }
 

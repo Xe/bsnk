@@ -8,7 +8,6 @@ import (
 	"github.com/Xe/bsnk/api"
 	"github.com/go-redis/redis"
 	"github.com/prettymuchbryce/goeasystar"
-	"github.com/prometheus/client_golang/prometheus"
 	"within.website/ln"
 	"within.website/ln/opname"
 )
@@ -42,7 +41,6 @@ func (pt pyraTarget) F() ln.F {
 
 // Start starts a game.
 func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
-	gamesStarted.With(prometheus.Labels{"brain": "pyra"}).Inc()
 	return &api.StartResponse{
 		Color:    "#FFD600",
 		HeadType: "beluga",
@@ -52,7 +50,6 @@ func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse,
 
 // Move responds with the snake's movements for a given Turn.
 func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
-	movesMade.With(prometheus.Labels{"brain": "pyra"}).Inc()
 	me := decoded.You.Body
 	var pickDir string
 
@@ -93,7 +90,6 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 
 // End ends a game.
 func (Pyra) End(ctx context.Context, sr api.SnakeRequest) error {
-	gamesEnded.With(prometheus.Labels{"brain": "pyra"}).Inc()
 	return nil
 }
 

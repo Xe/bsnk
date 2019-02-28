@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Xe/bsnk/api"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Erratic is a particularly terrible AI.
@@ -12,7 +11,6 @@ type Erratic struct{}
 
 // Start starts a game.
 func (Erratic) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
-	gamesStarted.With(prometheus.Labels{"brain": "erratic"}).Inc()
 	return &api.StartResponse{
 		Color: "#7FF3CF",
 	}, nil
@@ -20,7 +18,6 @@ func (Erratic) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartRespon
 
 // Move twitches around.
 func (Erratic) Move(ctx context.Context, gs api.SnakeRequest) (*api.MoveResponse, error) {
-	movesMade.With(prometheus.Labels{"brain": "erratic"}).Inc()
 	me := gs.You.Body
 	var pickDir string
 
@@ -43,6 +40,5 @@ func (Erratic) Move(ctx context.Context, gs api.SnakeRequest) (*api.MoveResponse
 
 // End ends a game.
 func (Erratic) End(ctx context.Context, sr api.SnakeRequest) error {
-	gamesEnded.With(prometheus.Labels{"brain": "erratic"}).Inc()
 	return nil
 }

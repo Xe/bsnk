@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Xe/bsnk/api"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Garen spins to win.
@@ -12,7 +11,6 @@ type Garen struct{}
 
 // Start kicks off a game.
 func (Garen) Start(ctx context.Context, sr api.SnakeRequest) (*api.StartResponse, error) {
-	gamesStarted.With(prometheus.Labels{"brain": "garen"}).Inc()
 	return &api.StartResponse{
 		Color: "#FFFF00",
 	}, nil
@@ -20,7 +18,6 @@ func (Garen) Start(ctx context.Context, sr api.SnakeRequest) (*api.StartResponse
 
 // Move spins to win.
 func (Garen) Move(ctx context.Context, sr api.SnakeRequest) (*api.MoveResponse, error) {
-	movesMade.With(prometheus.Labels{"brain": "garen"}).Inc()
 	directions := []string{"up", "left", "down", "right"}
 	pickDir := directions[sr.Turn%len(directions)]
 	return &api.MoveResponse{
@@ -30,6 +27,5 @@ func (Garen) Move(ctx context.Context, sr api.SnakeRequest) (*api.MoveResponse, 
 
 // End ends a game.
 func (Garen) End(ctx context.Context, sr api.SnakeRequest) error {
-	gamesEnded.With(prometheus.Labels{"brain": "garen"}).Inc()
 	return nil
 }

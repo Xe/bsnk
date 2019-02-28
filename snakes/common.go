@@ -5,11 +5,21 @@ import (
 	"github.com/prettymuchbryce/goeasystar"
 )
 
+// SpaceContents is the contents of a single space on the map.
+type SpaceContents int
+
+// Tile cost constants
+const (
+	Nothing   = 1
+	Risky     = 7
+	SnakeBody = 9
+)
+
 func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) {
 	pf := goeasystar.NewPathfinder()
 	pf.DisableCornerCutting()
 	pf.DisableDiagonals()
-	pf.SetAcceptableTiles([]int{1, 2, 5, 8})
+	pf.SetAcceptableTiles([]int{Nothing, Risky})
 
 	var grid [][]int
 	grid = make([][]int, decoded.Board.Height)
@@ -17,7 +27,30 @@ func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) 
 		grid[i] = make([]int, decoded.Board.Width)
 
 		for j := range grid[i] {
-			grid[i][j] = 1
+			grid[i][j] = Nothing
+		}
+	}
+
+	for _, sk := range decoded.Board.Snakes {
+		for _, pt := range sk.Body {
+			grid[pt.X][pt.Y] = SnakeBody
+
+			if sk.ID != decoded.You.ID {
+				for _, st := range []api.Coord{
+					pt.Up(),
+					pt.Up().Up(),
+					pt.Left(),
+					pt.Left().Left(),
+					pt.Right(),
+					pt.Right().Right(),
+					pt.Down(),
+					pt.Down().Down(),
+				} {
+					if decoded.Board.Inside(st) {
+						grid[st.X][st.Y] = Risky
+					}
+				}
+			}
 		}
 	}
 
@@ -51,25 +84,6 @@ func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) 
 
 		for _, pt := range sk.Body {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)
-			grid[pt.X][pt.Y] = 9
-
-			if sk.ID != decoded.You.ID {
-				for _, st := range []api.Coord{
-					pt.Up(),
-					pt.Up().Up(),
-					pt.Left(),
-					pt.Left().Left(),
-					pt.Right(),
-					pt.Right().Right(),
-					pt.Down(),
-					pt.Down().Down(),
-				} {
-					if decoded.Board.Inside(st) {
-						grid[st.X][st.Y] = 5
-						pf.SetAdditionalPointCost(st.X, st.Y, 5)
-					}
-				}
-			}
 		}
 	}
 

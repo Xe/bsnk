@@ -102,6 +102,23 @@ func (b Board) Inside(x Coord) bool {
 	return true
 }
 
+// DeadlyAdjacent returns all of the adjacent deadly coordinates from this one.
+func (b Board) DeadlyAdjacent(x Coord) []Coord {
+	var result []Coord
+	for _, place := range []Coord{
+		x.Up(),
+		x.Left(),
+		x.Down(),
+		x.Right(),
+	} {
+		if b.IsDeadly(place) {
+			result = append(result, place)
+		}
+	}
+
+	return result
+}
+
 func (b Board) IsDeadly(x Coord) bool {
 	if !b.Inside(x) {
 		return true

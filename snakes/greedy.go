@@ -80,20 +80,6 @@ func (Greedy) End(ctx context.Context, sr api.SnakeRequest) error {
 	return nil
 }
 
-func manhattan(l, r api.Coord) float64 {
-	absX := r.X - l.X
-	if absX < 0 {
-		absX = -absX
-	}
-
-	absY := r.Y - l.Y
-	if absY < 0 {
-		absY = -absY
-	}
-
-	return float64(absX + absY)
-}
-
 func selectGreedy(gs api.SnakeRequest) api.Coord {
 	me := gs.You.Body
 	var target api.Coord
@@ -101,11 +87,10 @@ func selectGreedy(gs api.SnakeRequest) api.Coord {
 	var distance float64 = 99999999999
 
 	for _, fd := range gs.Board.Food {
-		if sc := manhattan(me[0], fd); sc < distance && !gs.Board.IsDeadly(fd) {
-			for _, place := range []api.Coord{fd.Up(), fd.Down(), fd.Left(), fd.Right()} {
-				if gs.Board.IsDeadly(place) {
-					goto nextFood
-				}
+		l := api.Line{A: me[0], B: fd}
+		if sc := l.Manhattan(); sc < distance && !gs.Board.IsDeadly(fd) {
+			if len(gs.Board.DeadlyAdjacent(fd)) != 0 {
+				goto nextFood
 			}
 
 			distance = sc

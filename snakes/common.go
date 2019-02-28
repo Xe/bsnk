@@ -3,6 +3,25 @@ package snakes
 import (
 	"github.com/Xe/bsnk/api"
 	"github.com/prettymuchbryce/goeasystar"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
+
+var (
+	gamesStarted = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "games_started",
+		Help: "The number of games started",
+	}, []string{"brain"})
+
+	movesMade = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "game_moves_made",
+		Help: "The number of moves made",
+	}, []string{"brain"})
+
+	gamesEnded = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "games_ended",
+		Help: "The number of games ended",
+	}, []string{"brain"})
 )
 
 func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) {

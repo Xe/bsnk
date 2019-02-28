@@ -22,7 +22,7 @@ func (Erratic) Move(ctx context.Context, gs api.SnakeRequest) (*api.MoveResponse
 	var pickDir string
 
 	for _, place := range []api.Coord{me[0].Up(), me[0].Down(), me[0].Left(), me[0].Right()} {
-		if !gs.Board.IsDeadly(place) {
+		if gs.Board.Inside(place) && !gs.Board.IsDeadly(place) {
 			pickDir = me[0].Dir(place)
 		}
 	}

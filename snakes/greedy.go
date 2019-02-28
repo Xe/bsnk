@@ -60,8 +60,9 @@ func (g Greedy) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveRe
 		_, err = g.Redis.XAdd(&redis.XAddArgs{
 			Stream: "greedy:" + decoded.Game.ID,
 			Values: map[string]interface{}{
-				"state": base64.StdEncoding.EncodeToString(data),
-				"turn":  decoded.Turn,
+				"state":    base64.StdEncoding.EncodeToString(data),
+				"turn":     decoded.Turn,
+				"pick_dir": pickDir,
 			},
 		}).Result()
 		if err != nil {

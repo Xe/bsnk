@@ -73,8 +73,9 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		_, err = p.Redis.XAdd(&redis.XAddArgs{
 			Stream: "pyra:" + decoded.Game.ID,
 			Values: map[string]interface{}{
-				"state": base64.StdEncoding.EncodeToString(data),
-				"turn":  decoded.Turn,
+				"state":    base64.StdEncoding.EncodeToString(data),
+				"turn":     decoded.Turn,
+				"pick_dir": pickDir,
 			},
 		}).Result()
 		if err != nil {
@@ -124,21 +125,23 @@ func (p Pyra) selectTarget(ctx context.Context, gs api.SnakeRequest, pf *goeasys
 
 	{
 		tail := me[len(me)-1]
-		path, err := pf.FindPath(me[0].X, me[0].Y, tail.X, tail.Y)
-		if err != nil {
-			goto skip
-		}
+		for _, place := range []api.Coord{tail.Up(), tail.Down(), tail.Left(), tail.Right()} {
+			path, err := pf.FindPath(me[0].X, me[0].Y, place.X, place.Y)
+			if err != nil {
+				continue
+			}
 
-		targets = append(targets, pyraTarget{
-			Line: api.Line{
-				A: me[0],
-				B: tail,
-			},
-			Score:       50,
-			AstarLength: len(path),
-		})
+			targets = append(targets, pyraTarget{
+				Line: api.Line{
+					A: me[0],
+					B: tail,
+				},
+				Score:       50,
+				AstarLength: len(path),
+			})
+			break
+		}
 	}
-skip:
 
 	for _, sn := range gs.Board.Snakes {
 		if sn.ID == gs.You.ID {

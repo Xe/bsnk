@@ -32,8 +32,12 @@ func makePathfinder(decoded api.SnakeRequest) *goeasystar.Pathfinder {
 	pf.SetGrid(grid)
 
 	for _, sk := range decoded.Board.Snakes {
-		headDir := sk.Body[1].Dir(sk.Body[0])
+		var headDir string
 		var theirNext api.Coord
+		if len(sk.Body) < 2 {
+			goto skipHead
+		}
+		headDir = sk.Body[1].Dir(sk.Body[0])
 		{
 			switch headDir {
 			case "left":

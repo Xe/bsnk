@@ -39,8 +39,8 @@ func (pt pyraTarget) F() ln.F {
 func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
 	return &api.StartResponse{
 		Color:    "#FFD600",
-		HeadType: "pixel",
-		TailType: "pixel",
+		HeadType: "beluga",
+		TailType: "skinny",
 	}, nil
 }
 

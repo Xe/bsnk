@@ -103,10 +103,7 @@ func (b Board) Inside(x Coord) bool {
 }
 
 func (b Board) IsDeadly(x Coord) bool {
-	switch {
-	case x.X >= b.Width:
-		return true
-	case x.Y >= b.Height:
+	if !b.Inside(x) {
 		return true
 	}
 

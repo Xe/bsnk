@@ -7,7 +7,7 @@ import (
 )
 
 // Erratic is a particularly terrible AI.
-type Erratic struct{}
+type Erratic struct{} 
 
 // Start starts a game.
 func (Erratic) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {

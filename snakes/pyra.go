@@ -110,7 +110,7 @@ func (p Pyra) selectTarget(ctx context.Context, gs api.SnakeRequest, pf *goeasys
 				A: me[0],
 				B: tail,
 			},
-			Score:       30,
+			Score:       50,
 			AstarLength: len(path),
 		})
 	}

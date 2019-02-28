@@ -49,55 +49,35 @@ func middlewareGitRev(next http.Handler) http.Handler {
 	})
 }
 
-func middlewareMetrics(family string, next http.Handler) http.Handler {
-	cnt := prometheus.NewCounterVec(
+var (
+	requestCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: family+"_handler_requests_total",
+			Name: "handler_requests_total",
 			Help: "Total number of request/responses by HTTP status code.",
-		},
-		[]string{"code"},
-	)
-	cnt.WithLabelValues("200")
-	cnt.WithLabelValues("500")
-	cnt.WithLabelValues("503")
+		},	[]string{"handler", "code"})
 
-	if err := prometheus.Register(cnt); err != nil {
-		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			cnt = are.ExistingCollector.(*prometheus.CounterVec)
-		} else {
-			panic(err)
-		}
-	}
-
-	hst := prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: family+"_handler_duration",
-		Help: family+" handler request duration.",
+	requestDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "handler_request_duration",
+		Help: "Handler request duration.",
 	}, []string{"handler", "method"})
 
-	if err := prometheus.Register(hst); err != nil {
-		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			cnt = are.ExistingCollector.(*prometheus.CounterVec)
-		} else {
-			panic(err)
-		}
-	}
-
-	gge := prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: family+"_handler_requests_in_flight",
+	requestInFlight = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "handler_requests_in_flight",
 		Help: "Current number of requests being served.",
-	})
-	if err := prometheus.Register(gge); err != nil {
-		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			gge = are.ExistingCollector.(prometheus.Gauge)
-		} else {
-			panic(err)
-		}
-	}
+	}, []string{"handler"})
+)
 
+func init() {
+	prometheus.Register(requestCounter)
+	prometheus.Register(requestDuration)
+	prometheus.Register(requestInFlight)
+}
+
+func middlewareMetrics(family string, next http.Handler) http.Handler {
 	return promhttp.InstrumentHandlerDuration(
-		hst.MustCurryWith(prometheus.Labels{"handler": family}),
-		promhttp.InstrumentHandlerCounter(cnt,
-			promhttp.InstrumentHandlerInFlight(gge, next),
+		requestDuration.MustCurryWith(prometheus.Labels{"handler": family}),
+		promhttp.InstrumentHandlerCounter(requestCounter.MustCurryWith(prometheus.Labels{"handler": family}),
+			promhttp.InstrumentHandlerInFlight(requestInFlight.With(prometheus.Labels{"handler": family}), next),
 		),
 	)
 }

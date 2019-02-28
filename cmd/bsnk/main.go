@@ -11,6 +11,8 @@ import (
 	"github.com/Xe/bsnk/snakes"
 	"github.com/facebookgo/flagenv"
 	"github.com/go-redis/redis"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/trace"
 	"within.website/ln"
 	"within.website/ln/ex"
@@ -65,6 +67,7 @@ func init() {
 func main() {
 	flagenv.Parse()
 	flag.Parse()
+	prometheus.Register(prometheus.NewGoCollector())
 
 	ctx := opname.With(context.Background(), "main")
 
@@ -75,6 +78,7 @@ func main() {
 	c := redis.NewClient(options)
 
 	http.HandleFunc("/", index)
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/health", health)
 	http.Handle("/garen/", middlewareSpan("garen", api.Server{
 		Brain: snakes.Garen{},

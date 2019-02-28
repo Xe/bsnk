@@ -7,6 +7,8 @@ import (
 
 	"github.com/Xe/bsnk/api"
 	"github.com/go-redis/redis"
+	"github.com/prometheus/client_golang/prometheus"
+        "github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 	"within.website/ln/opname"
@@ -39,8 +41,27 @@ func (pt pyraTarget) F() ln.F {
 	return f
 }
 
+var (
+        pyraGamesStarted = promauto.NewCounter(prometheus.CounterOpts{
+                Name: "pyra_games_started",
+                Help: "The number of games started",
+        })
+
+	pyraMovesMade = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pyra_moves_made",
+		Help: "The number of moves made",
+	})
+
+	pyraGamesEnded = promauto.NewCounter(prometheus.CounterOpts{
+                Name: "pyra_games_ended",
+                Help: "The number of games ended",
+        })
+)
+
+
 // Start starts a game.
 func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
+	pyraGamesStarted.Inc()
 	return &api.StartResponse{
 		Color:    "#FFD600",
 		HeadType: "beluga",
@@ -50,6 +71,7 @@ func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse,
 
 // Move responds with the snake's movements for a given Turn.
 func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
+	pyraMovesMade.Inc()
 	me := decoded.You.Body
 	var pickDir string
 
@@ -90,6 +112,7 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 
 // End ends a game.
 func (Pyra) End(ctx context.Context, sr api.SnakeRequest) error {
+	pyraGamesEnded.Inc()
 	return nil
 }
 

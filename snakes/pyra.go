@@ -7,9 +7,9 @@ import (
 
 	"github.com/Xe/bsnk/api"
 	"github.com/go-redis/redis"
-	"github.com/prometheus/client_golang/prometheus"
-        "github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prettymuchbryce/goeasystar"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"within.website/ln"
 	"within.website/ln/opname"
 )
@@ -42,10 +42,10 @@ func (pt pyraTarget) F() ln.F {
 }
 
 var (
-        pyraGamesStarted = promauto.NewCounter(prometheus.CounterOpts{
-                Name: "pyra_games_started",
-                Help: "The number of games started",
-        })
+	pyraGamesStarted = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pyra_games_started",
+		Help: "The number of games started",
+	})
 
 	pyraMovesMade = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "pyra_moves_made",
@@ -53,11 +53,10 @@ var (
 	})
 
 	pyraGamesEnded = promauto.NewCounter(prometheus.CounterOpts{
-                Name: "pyra_games_ended",
-                Help: "The number of games ended",
-        })
+		Name: "pyra_games_ended",
+		Help: "The number of games ended",
+	})
 )
-
 
 // Start starts a game.
 func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {

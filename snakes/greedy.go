@@ -8,14 +8,16 @@ import (
 
 	"github.com/Xe/bsnk/api"
 	"github.com/go-redis/redis"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"within.website/ln"
 )
 
 var (
 	greedyGamesStarted = promauto.NewCounter(prometheus.CounterOpts{
-                Name: "greedy_games_started",
-                Help: "The number of games started",
-        })
+		Name: "greedy_games_started",
+		Help: "The number of games started",
+	})
 
 	greedyMovesMade = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "greedy_moves_made",
@@ -23,9 +25,9 @@ var (
 	})
 
 	greedyGamesEnded = promauto.NewCounter(prometheus.CounterOpts{
-                Name: "greedy_games_ended",
-                Help: "The number of games ended",
-        })
+		Name: "greedy_games_ended",
+		Help: "The number of games ended",
+	})
 )
 
 // Greedy is a greedy snake AI. It will try to get as long as it can as fast as

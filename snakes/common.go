@@ -34,19 +34,24 @@ func makePathfinder(decoded api.SnakeRequest) *goeasystar.Pathfinder {
 	for _, sk := range decoded.Board.Snakes {
 		headDir := sk.Body[1].Dir(sk.Body[0])
 		var theirNext api.Coord
-		switch headDir {
-		case "left":
-			theirNext = sk.Body[0].Left()
-		case "right":
-			theirNext = sk.Body[0].Right()
-		case "up":
-			theirNext = sk.Body[0].Up()
-		case "down":
-			theirNext = sk.Body[0].Down()
+		{
+			switch headDir {
+			case "left":
+				theirNext = sk.Body[0].Left()
+			case "right":
+				theirNext = sk.Body[0].Right()
+			case "up":
+				theirNext = sk.Body[0].Up()
+			case "down":
+				theirNext = sk.Body[0].Down()
+			default:
+				goto skipHead
+			}
+			if decoded.Board.Inside(theirNext) {
+				pf.AvoidAdditionalPoint(theirNext.X, theirNext.Y)
+			}
 		}
-		if decoded.Board.Inside(theirNext) {
-			pf.AvoidAdditionalPoint(theirNext.X, theirNext.Y)
-		}
+	skipHead:
 
 		for _, pt := range sk.Body {
 			pf.AvoidAdditionalPoint(pt.X, pt.Y)

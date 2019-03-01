@@ -11,7 +11,6 @@ import (
 	"github.com/Xe/bsnk/api"
 	"github.com/Xe/bsnk/snakes"
 	"github.com/facebookgo/flagenv"
-	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/trace"
@@ -55,7 +54,7 @@ var (
 		prometheus.CounterOpts{
 			Name: "handler_requests_total",
 			Help: "Total number of request/responses by HTTP status code.",
-		},	[]string{"handler", "code"})
+		}, []string{"handler", "code"})
 
 	requestDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "handler_request_duration",
@@ -87,14 +86,13 @@ var (
 	port          = flag.String("port", "5000", "http port to listen on")
 	gitRev        = flag.String("git-rev", "", "if set, use this git revision for the color code")
 	pyraMinLength = flag.Int("pyra-min-length", 8, "min length for pyra")
-	redisURL      = flag.String("redis-url", "", "redis URL")
 )
 
 func createSnake(name string, ai api.AI) http.Handler {
 	return middlewareMetrics(name,
 		middlewareSpan(name, api.Server{
 			Brain: ai,
-			Name: name,
+			Name:  name,
 		}),
 	)
 }
@@ -112,7 +110,7 @@ func vars(w http.ResponseWriter, r *http.Request) {
 	e := json.NewEncoder(w)
 	e.SetIndent("", "  ")
 	e.Encode(map[string]interface{}{
-		"git_rev": *gitRev,
+		"git_rev":         *gitRev,
 		"pyra_min_length": *pyraMinLength,
 	})
 }
@@ -123,23 +121,14 @@ func main() {
 
 	ctx := opname.With(context.Background(), "main")
 
-	options, err := redis.ParseURL(*redisURL)
-	if err != nil {
-		ln.FatalErr(ctx, err, ln.F{"redis_url": *redisURL})
-	}
-	c := redis.NewClient(options)
-
 	http.HandleFunc("/", index)
 	http.HandleFunc("/vars", vars)
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/health", health)
 	http.Handle("/garen/", createSnake("garen", snakes.Garen{}))
-	http.Handle("/greedy/", createSnake("greedy", snakes.Greedy{
-		Redis: c,
-	}))
+	http.Handle("/greedy/", createSnake("greedy", snakes.Greedy{}))
 	http.Handle("/erratic/", createSnake("erratic", snakes.Erratic{}))
 	http.Handle("/pyra/", createSnake("pyra", snakes.Pyra{
-		Redis: c,
 		MinLength: *pyraMinLength,
 	}))
 

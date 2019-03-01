@@ -2,11 +2,8 @@ package snakes
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 
 	"github.com/Xe/bsnk/api"
-	"github.com/go-redis/redis"
 	"github.com/prettymuchbryce/goeasystar"
 	"within.website/ln"
 	"within.website/ln/opname"
@@ -16,7 +13,6 @@ import (
 //
 // Struct memebers are configuration flags for the snake behavior.
 type Pyra struct {
-	Redis     *redis.Client
 	MinLength int
 }
 
@@ -53,7 +49,7 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	me := decoded.You.Body
 	var pickDir string
 
-	grid, pf := makePathfinder(decoded)
+	_, pf := makePathfinder(decoded)
 	target := p.selectTarget(ctx, decoded, pf)
 
 	path, _ := pf.FindPath(me[0].X, me[0].Y, target.Line.B.X, target.Line.B.Y)
@@ -61,27 +57,6 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		X: path[1].X,
 		Y: path[1].Y,
 	})
-
-	data, err := json.Marshal(map[string]interface{}{
-		"input":    decoded,
-		"grid":     grid,
-		"target":   target,
-		"path":     path,
-		"pick_dir": pickDir,
-	})
-	if err == nil {
-		_, err = p.Redis.XAdd(&redis.XAddArgs{
-			Stream: "pyra:" + decoded.Game.ID,
-			Values: map[string]interface{}{
-				"state":    base64.StdEncoding.EncodeToString(data),
-				"turn":     decoded.Turn,
-				"pick_dir": pickDir,
-			},
-		}).Result()
-		if err != nil {
-			ln.Error(ctx, err)
-		}
-	}
 
 	return &api.MoveResponse{
 		Move: pickDir,

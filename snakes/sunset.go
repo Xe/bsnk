@@ -123,7 +123,7 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 
 	trueTargetNode := BestNode
 
-	for trueTargetNode.Previous > 0 {
+	for trueTargetNode.Previous != -1 {
 		trueTargetNode = &NodePool[trueTargetNode.Previous]
 	}
 

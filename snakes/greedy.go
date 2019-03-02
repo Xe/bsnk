@@ -62,7 +62,7 @@ func selectGreedy(gs api.SnakeRequest) api.Coord {
 
 	for _, fd := range gs.Board.Food {
 		l := api.Line{A: me[0], B: fd}
-		if sc := l.Manhattan(); sc < distance {
+		if sc := l.Distance(); sc < distance {
 			distance = sc
 			target = fd
 			foundTarget = true

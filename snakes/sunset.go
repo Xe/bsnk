@@ -30,7 +30,7 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		sunsetNode{
 			Node:      me[0],
 			Cost:      0,
-			TotalCost: int(sunsetHeuristic(me[0], target)),
+			TotalCost: 1 + int(sunsetHeuristic(me[0], target)),
 			Previous:  -1,
 		},
 	}

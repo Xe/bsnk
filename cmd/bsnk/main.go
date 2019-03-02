@@ -131,6 +131,7 @@ func main() {
 	http.Handle("/pyra/", createSnake("pyra", snakes.Pyra{
 		MinLength: *pyraMinLength,
 	}))
+	http.Handle("/sunset/", createSnake("sunset", snakes.Sunset{}))
 
 	ln.Log(ctx, ln.Info("booting"))
 	ln.FatalErr(ctx, http.ListenAndServe(

@@ -132,6 +132,7 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	ctx = ln.WithF(ctx, logCoords("target", target))
 	ctx = ln.WithF(ctx, logCoords("trueTarget", trueTargetNode.Node))
 	ctx = ln.WithF(ctx, logCoords("bestNode", BestNode.Node))
+	ctx = ln.WithF(ctx, logCoords("my_head", me[0]))
 
 	diff := api.Coord{trueTargetNode.Node.X - me[0].X, trueTargetNode.Node.Y - me[0].Y}
 

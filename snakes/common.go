@@ -38,13 +38,9 @@ func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) 
 			if sk.ID != decoded.You.ID {
 				for _, st := range []api.Coord{
 					pt.Up(),
-					pt.Up().Up(),
 					pt.Left(),
-					pt.Left().Left(),
 					pt.Right(),
-					pt.Right().Right(),
 					pt.Down(),
-					pt.Down().Down(),
 				} {
 					if decoded.Board.Inside(st) {
 						grid[st.X][st.Y] = Risky

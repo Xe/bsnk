@@ -39,7 +39,6 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	heap.Init(&Queue)
 
 	BestNode := &NodePool[0]
-	LastBest := BestNode
 
 	for len(Queue) > 0 {
 		currNode := heap.Pop(&Queue).(*sunsetNode)
@@ -116,13 +115,12 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 			heap.Fix(&Queue, fixInd)
 
 			if BestNode.TotalCost > int(heuristic) {
-				LastBest = BestNode
 				BestNode = neighNode
 			}
 		}
 	}
 
-	trueTargetNode := LastBest
+	trueTargetNode := BestNode
 
 	for trueTargetNode.Previous != -1 {
 		trueTargetNode = &NodePool[trueTargetNode.Previous]

@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"github.com/Xe/bsnk/api"
+	"within.website/ln"
 )
 
 // Sunset is a snake AI based off of the rantings of Ahroo in Discord DM.
@@ -127,6 +128,10 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	}
 
 	var pickDir string
+
+	ctx = ln.WithF(ctx, logCoords("target", target))
+	ctx = ln.WithF(ctx, logCoords("trueTarget", trueTargetNode.Node))
+	ctx = ln.WithF(ctx, logCoords("bestNode", BestNode.Node))
 
 	diff := api.Coord{trueTargetNode.Node.X - me[0].X, trueTargetNode.Node.Y - me[0].Y}
 

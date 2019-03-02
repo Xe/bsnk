@@ -62,25 +62,16 @@ func selectGreedy(gs api.SnakeRequest) api.Coord {
 
 	for _, fd := range gs.Board.Food {
 		l := api.Line{A: me[0], B: fd}
-		if sc := l.Manhattan(); sc < distance && !gs.Board.IsDeadly(fd) {
-			if len(gs.Board.DeadlyAdjacent(fd)) != 0 {
-				goto nextFood
-			}
-
+		if sc := l.Manhattan(); sc < distance {
 			distance = sc
 			target = fd
 			foundTarget = true
 		}
-	nextFood:
 	}
 
 	if !foundTarget {
 		tail := me[len(me)-1]
-		for _, place := range []api.Coord{tail.Up(), tail.Down(), tail.Left(), tail.Right()} {
-			if !gs.Board.IsDeadly(place) {
-				target = place
-			}
-		}
+		target = tail
 	}
 
 	return target

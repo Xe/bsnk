@@ -27,10 +27,10 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 	me := decoded.You.Body
 	NodePool := []sunsetNode{
 		sunsetNode{
-			Node: me[0],
-			Cost: 0,
+			Node:      me[0],
+			Cost:      0,
 			TotalCost: int(sunsetHeuristic(me[0], target)),
-			Previous: -1,
+			Previous:  -1,
 		},
 	}
 	Queue := make(sunsetNodeQueue, 1)
@@ -55,8 +55,10 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 		_, currInd := sunsetFindNode(NodePool, currNode.Node)
 
 		for _, currNeigh := range Neighs {
-			if currNeigh.Eq(NodePool[currNode.Previous].Node) {
-				continue
+			if len(NodePool) > currNode.Previous {
+				if currNeigh.Eq(NodePool[currNode.Previous].Node) {
+					continue
+				}
 			}
 
 			new := false
@@ -103,7 +105,7 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 				Queue.Push(neighNode)
 				fixInd = len(Queue) - 1
 			} else {
-				for _,  currNode := range Queue {
+				for _, currNode := range Queue {
 					if currNode.Node.Eq(neighNode.Node) {
 						break
 					}
@@ -159,8 +161,8 @@ type sunsetNode struct {
 
 type sunsetNodeQueue []*sunsetNode
 
-func (queue sunsetNodeQueue) Len() int           { return len(queue) }
-func (queue sunsetNodeQueue) Swap(i, j int)      { queue[i], queue[j] = queue[j], queue[i] }
+func (queue sunsetNodeQueue) Len() int      { return len(queue) }
+func (queue sunsetNodeQueue) Swap(i, j int) { queue[i], queue[j] = queue[j], queue[i] }
 
 func (queue sunsetNodeQueue) Less(a, b int) bool {
 	return queue[a].TotalCost < queue[b].TotalCost

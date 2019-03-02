@@ -124,6 +124,10 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 
 	trueTargetNode := LastBest
 
+	for trueTargetNode.Previous != -1 {
+		trueTargetNode = &NodePool[trueTargetNode.Previous]
+	}
+
 	var pickDir string
 
 	diff := api.Coord{trueTargetNode.Node.X - me[0].X, trueTargetNode.Node.Y - me[0].Y}

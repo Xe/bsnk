@@ -3,6 +3,7 @@ package snakes
 import (
 	"container/heap"
 	"context"
+	"log"
 	"math"
 
 	"github.com/Xe/bsnk/api"
@@ -56,6 +57,8 @@ func (Sunset) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 
 		for _, currNeigh := range Neighs {
 			if len(NodePool) > currNode.Previous {
+				log.Printf("len(NodePool): %d", len(NodePool))
+				log.Printf("currNode.Previous: %d", currNode.Previous)
 				if currNeigh.Eq(NodePool[currNode.Previous].Node) {
 					continue
 				}

@@ -11,6 +11,7 @@ import (
 	"github.com/Xe/bsnk/api"
 	"github.com/Xe/bsnk/snakes"
 	"github.com/facebookgo/flagenv"
+	"github.com/povilasv/prommod"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/trace"
@@ -120,6 +121,8 @@ func main() {
 	flag.Parse()
 
 	ctx := opname.With(context.Background(), "main")
+
+	prometheus.Register(prommod.NewCollector("bsnk"))
 
 	http.HandleFunc("/", index)
 	http.HandleFunc("/vars", vars)

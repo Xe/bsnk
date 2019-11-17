@@ -14,6 +14,8 @@ import (
 // Struct memebers are configuration flags for the snake behavior.
 type Pyra struct {
 	MinLength int
+
+	targets map[string]pyraState
 }
 
 type pyraTarget struct {
@@ -21,6 +23,11 @@ type pyraTarget struct {
 
 	Score       int
 	AstarLength int
+}
+
+type pyraState struct {
+	path []*goeasystar.Point
+	trg  *pyraTarget
 }
 
 func (pt pyraTarget) F() ln.F {
@@ -36,7 +43,13 @@ func (pt pyraTarget) F() ln.F {
 }
 
 // Start starts a game.
-func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
+func (p *Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
+	if p.targets == nil {
+		p.targets = map[string]pyraState{}
+	}
+
+	p.targets[gs.Game.ID] = p.getState(ctx, gs)
+
 	return &api.StartResponse{
 		Color:    "#FFD600",
 		HeadType: "beluga",
@@ -44,19 +57,38 @@ func (Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse,
 	}, nil
 }
 
+func (p *Pyra) getState(ctx context.Context, sr api.SnakeRequest) pyraState {
+	me := sr.You.Body
+
+	_, pf := makePathfinder(sr)
+	target := p.selectTarget(ctx, sr, pf)
+
+	path, _ := pf.FindPath(me[0].X, me[0].Y, target.Line.B.X, target.Line.B.Y)
+
+	return pyraState{
+		path: path,
+		trg:  &target,
+	}
+}
+
 // Move responds with the snake's movements for a given Turn.
-func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
+func (p *Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResponse, error) {
 	me := decoded.You.Body
 	var pickDir string
 
-	_, pf := makePathfinder(decoded)
-	target := p.selectTarget(ctx, decoded, pf)
+	st := p.targets[decoded.Game.ID]
 
-	path, _ := pf.FindPath(me[0].X, me[0].Y, target.Line.B.X, target.Line.B.Y)
+	if len(st.path) == 0 || len(st.path) == 1 {
+		st = p.getState(ctx, decoded)
+	}
+
 	pickDir = me[0].Dir(api.Coord{
-		X: path[1].X,
-		Y: path[1].Y,
+		X: st.path[1].X,
+		Y: st.path[1].Y,
 	})
+	st.path = st.path[1:]
+
+	p.targets[decoded.Game.ID] = st
 
 	return &api.MoveResponse{
 		Move: pickDir,
@@ -64,7 +96,9 @@ func (p Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveResp
 }
 
 // End ends a game.
-func (Pyra) End(ctx context.Context, sr api.SnakeRequest) error {
+func (p *Pyra) End(ctx context.Context, sr api.SnakeRequest) error {
+	delete(p.targets, sr.Game.ID)
+
 	return nil
 }
 

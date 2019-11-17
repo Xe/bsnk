@@ -131,7 +131,7 @@ func main() {
 	http.Handle("/garen/", createSnake("garen", snakes.Garen{}))
 	http.Handle("/greedy/", createSnake("greedy", snakes.Greedy{}))
 	http.Handle("/erratic/", createSnake("erratic", snakes.Erratic{}))
-	http.Handle("/pyra/", createSnake("pyra", snakes.Pyra{
+	http.Handle("/pyra/", createSnake("pyra", &snakes.Pyra{
 		MinLength: *pyraMinLength,
 	}))
 	http.Handle("/sunset/", createSnake("sunset", snakes.Sunset{}))

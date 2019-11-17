@@ -51,7 +51,7 @@ func (p *Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartRespon
 	p.targets[gs.Game.ID] = p.getState(ctx, gs)
 
 	return &api.StartResponse{
-		Color:    "#FFD600",
+		Color:    "#5ce8c3",
 		HeadType: "beluga",
 		TailType: "skinny",
 	}, nil
@@ -78,15 +78,24 @@ func (p *Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveRes
 
 	st := p.targets[decoded.Game.ID]
 
-	if len(st.path) == 0 || len(st.path) == 1 {
+	if len(st.path) > 2 {
 		st = p.getState(ctx, decoded)
 	}
 
-	pickDir = me[0].Dir(api.Coord{
-		X: st.path[1].X,
-		Y: st.path[1].Y,
-	})
-	st.path = st.path[1:]
+	if len(st.path) > 2 {
+		for _, coord := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Right(), me[0].Down()} {
+			if decoded.Board.Inside(coord) && !decoded.Board.IsDeadly(coord) {
+				pickDir = me[0].Dir(coord)
+				break
+			}
+		}
+	} else {
+		pickDir = me[0].Dir(api.Coord{
+			X: st.path[1].X,
+			Y: st.path[1].Y,
+		})
+		st.path = st.path[1:]
+	}
 
 	p.targets[decoded.Game.ID] = st
 

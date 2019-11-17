@@ -119,10 +119,6 @@ func (p Pyra) selectTarget(ctx context.Context, gs api.SnakeRequest, pf *goeasys
 	}
 
 	for _, sn := range gs.Board.Snakes {
-		if sn.ID == gs.You.ID {
-			continue
-		}
-
 		if len(gs.You.Body) < len(sn.Body) {
 			continue
 		}

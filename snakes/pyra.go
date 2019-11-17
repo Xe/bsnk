@@ -78,11 +78,11 @@ func (p *Pyra) Move(ctx context.Context, decoded api.SnakeRequest) (*api.MoveRes
 
 	st := p.targets[decoded.Game.ID]
 
-	if len(st.path) > 2 {
+	if len(st.path) < 2 {
 		st = p.getState(ctx, decoded)
 	}
 
-	if len(st.path) > 2 {
+	if len(st.path) < 2 {
 		for _, coord := range []api.Coord{me[0].Up(), me[0].Left(), me[0].Right(), me[0].Down()} {
 			if decoded.Board.Inside(coord) && !decoded.Board.IsDeadly(coord) {
 				pickDir = me[0].Dir(coord)

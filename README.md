@@ -1,2 +1,3 @@
 # bsnk
-My battlesnake.io bot
+
+My battlesnake.io bots

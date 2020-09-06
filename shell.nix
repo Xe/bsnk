@@ -10,4 +10,6 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     go goimports golint nur.repos.xe.gopls
   ];
+
+  PORT = "8000";
 }

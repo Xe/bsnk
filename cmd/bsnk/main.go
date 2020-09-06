@@ -129,7 +129,7 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/health", health)
 	http.Handle("/garen/", createSnake("garen", snakes.Garen{}))
-	http.Handle("/greedy/", createSnake("greedy", snakes.Greedy{}))
+	http.Handle("/greedy/", createSnake("greedy", &snakes.Greedy{}))
 	http.Handle("/erratic/", createSnake("erratic", snakes.Erratic{}))
 	http.Handle("/pyra/", createSnake("pyra", &snakes.Pyra{
 		MinLength: *pyraMinLength,

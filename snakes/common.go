@@ -13,6 +13,7 @@ const (
 	Nothing   = 1
 	Risky     = 7
 	SnakeBody = 9
+	Edge      = 40
 )
 
 func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) {
@@ -28,6 +29,10 @@ func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) 
 
 		for j := range grid[i] {
 			grid[i][j] = Nothing
+
+			if i == 0 || j == 0 {
+				grid[i][j] = Edge
+			}
 		}
 	}
 
@@ -35,16 +40,14 @@ func makePathfinder(decoded api.SnakeRequest) ([][]int, *goeasystar.Pathfinder) 
 		for _, pt := range sk.Body {
 			grid[pt.X][pt.Y] = SnakeBody
 
-			if sk.ID != decoded.You.ID {
-				for _, st := range []api.Coord{
-					pt.Up(),
-					pt.Left(),
-					pt.Right(),
-					pt.Down(),
-				} {
-					if decoded.Board.Inside(st) {
-						grid[st.X][st.Y] = Risky
-					}
+			for _, st := range []api.Coord{
+				pt.Up(),
+				pt.Left(),
+				pt.Right(),
+				pt.Down(),
+			} {
+				if decoded.Board.Inside(st) {
+					grid[st.X][st.Y] = SnakeBody
 				}
 			}
 		}

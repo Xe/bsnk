@@ -47,7 +47,13 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Snake-AI", s.Name)
 
 	if r.Method != http.MethodPost {
-		http.Error(w, s.Name+" OK", http.StatusOK)
+		result, err := s.Brain.Ping()
+		if err != nil {
+			ln.Error(r.Context(), err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(result)
 		return
 	}
 
@@ -86,7 +92,7 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err = s.Brain.End(ctx, decoded)
 		gamesEnded.With(prometheus.Labels{"brain": s.Name}).Inc()
 		ln.Log(ctx, decoded)
-	case "":
+	default:
 		result, err = s.Brain.Ping()
 	}
 

@@ -12,11 +12,16 @@ import (
 // it can.
 type Greedy struct{}
 
-// Start starts a game.
-func (Greedy) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
-	return &api.StartResponse{
-		Color: "#c79dd7",
+func (Greedy) Ping() (*api.PingResponse, error) {
+	return &api.PingResponse{
+		APIVersion: "1",
+		Color:      "#c79dd7",
 	}, nil
+}
+
+// Start starts a game.
+func (Greedy) Start(ctx context.Context, gs api.SnakeRequest) error {
+	return nil
 }
 
 // Move responds with the snake's movements for a given Turn.

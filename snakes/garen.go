@@ -9,11 +9,16 @@ import (
 // Garen spins to win.
 type Garen struct{}
 
-// Start kicks off a game.
-func (Garen) Start(ctx context.Context, sr api.SnakeRequest) (*api.StartResponse, error) {
-	return &api.StartResponse{
-		Color: "#FFFF00",
+func (Garen) Ping() (*api.PingResponse, error) {
+	return &api.PingResponse{
+		APIVersion: "1",
+		Color:      "#FFFF00",
 	}, nil
+}
+
+// Start kicks off a game.
+func (Garen) Start(ctx context.Context, sr api.SnakeRequest) error {
+	return nil
 }
 
 // Move spins to win.

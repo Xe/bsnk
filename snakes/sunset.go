@@ -12,13 +12,18 @@ import (
 // Sunset is a snake AI based off of the rantings of Ahroo in Discord DM.
 type Sunset struct{}
 
-// Start kicks off a game.
-func (Sunset) Start(ctx context.Context, sr api.SnakeRequest) (*api.StartResponse, error) {
-	return &api.StartResponse{
-		Color:    "#FFCA54",
-		HeadType: "sand-worm",
-		TailType: "round-bum",
+func (Sunset) Ping() (*api.PingResponse, error) {
+	return &api.PingResponse{
+		APIVersion: "1",
+		Color:      "#FFCA54",
+		HeadType:   "sand-worm",
+		TailType:   "round-bum",
 	}, nil
+}
+
+// Start kicks off a game.
+func (Sunset) Start(ctx context.Context, sr api.SnakeRequest) error {
+	return nil
 }
 
 // Move selects a target and goes for it.

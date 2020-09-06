@@ -42,19 +42,24 @@ func (pt pyraTarget) F() ln.F {
 	return f
 }
 
+func (Pyra) Ping() (*api.PingResponse, error) {
+	return &api.PingResponse{
+		APIVersion: "1",
+		Color:      "#5ce8c3",
+		HeadType:   "beluga",
+		TailType:   "skinny",
+	}, nil
+}
+
 // Start starts a game.
-func (p *Pyra) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
+func (p *Pyra) Start(ctx context.Context, gs api.SnakeRequest) error {
 	if p.targets == nil {
 		p.targets = map[string]pyraState{}
 	}
 
 	p.targets[gs.Game.ID] = p.getState(ctx, gs)
 
-	return &api.StartResponse{
-		Color:    "#5ce8c3",
-		HeadType: "beluga",
-		TailType: "skinny",
-	}, nil
+	return nil
 }
 
 func (p *Pyra) getState(ctx context.Context, sr api.SnakeRequest) pyraState {

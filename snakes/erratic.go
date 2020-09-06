@@ -9,11 +9,16 @@ import (
 // Erratic is a particularly terrible AI.
 type Erratic struct{}
 
-// Start starts a game.
-func (Erratic) Start(ctx context.Context, gs api.SnakeRequest) (*api.StartResponse, error) {
-	return &api.StartResponse{
-		Color: "#7FF3CF",
+func (Erratic) Ping() (*api.PingResponse, error) {
+	return &api.PingResponse{
+		APIVersion: "1",
+		Color:      "#7FF3CF",
 	}, nil
+}
+
+// Start starts a game.
+func (Erratic) Start(ctx context.Context, gs api.SnakeRequest) error {
+	return nil
 }
 
 // Move twitches around.

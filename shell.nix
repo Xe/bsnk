@@ -1,5 +1,6 @@
 let
-  pkgs = import <nixpkgs> { };
+  sources = import ./nix/sources.nix;
+  pkgs = import sources.nixpkgs { };
   nur = import (builtins.fetchTarball
     "https://github.com/nix-community/NUR/archive/master.tar.gz") {
       inherit pkgs;

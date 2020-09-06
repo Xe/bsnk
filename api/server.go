@@ -31,7 +31,8 @@ var (
 
 // AI is an individual snake AI.
 type AI interface {
-	Start(ctx context.Context, sr SnakeRequest) (*StartResponse, error)
+	Ping() (*PingResponse, error)
+	Start(ctx context.Context, sr SnakeRequest) error
 	Move(ctx context.Context, sr SnakeRequest) (*MoveResponse, error)
 	End(ctx context.Context, sr SnakeRequest) error
 }
@@ -67,11 +68,12 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch filepath.Base(r.URL.Path) {
 	case "start":
 		ctx := opname.With(ctx, "start-game")
-		result, err = s.Brain.Start(ctx, decoded)
+		err = s.Brain.Start(ctx, decoded)
 		gamesStarted.With(prometheus.Labels{"brain": s.Name}).Inc()
 		if err == nil {
 			ln.Log(ctx, decoded, result)
 		}
+		result = ln.F{}
 	case "move":
 		ctx := opname.With(ctx, "move")
 		result, err = s.Brain.Move(ctx, decoded)
@@ -84,6 +86,8 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err = s.Brain.End(ctx, decoded)
 		gamesEnded.With(prometheus.Labels{"brain": s.Name}).Inc()
 		ln.Log(ctx, decoded)
+	case "":
+		result, err = s.Brain.Ping()
 	}
 
 	if err != nil {

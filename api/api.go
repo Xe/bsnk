@@ -25,9 +25,9 @@ func (l Coord) Dir(r Coord) string {
 		return "right"
 	case l.X > r.X:
 		return "left"
-	case l.Y > r.Y:
-		return "up"
 	case l.Y < r.Y:
+		return "up"
+	case l.Y > r.Y:
 		return "down"
 	}
 
@@ -56,14 +56,14 @@ func (l Coord) Right() Coord {
 func (l Coord) Up() Coord {
 	return Coord{
 		X: l.X,
-		Y: l.Y - 1,
+		Y: l.Y + 1,
 	}
 }
 
 func (l Coord) Down() Coord {
 	return Coord{
 		X: l.X,
-		Y: l.Y + 1,
+		Y: l.Y - 1,
 	}
 }
 
@@ -158,10 +158,11 @@ func (sr SnakeRequest) F() ln.F {
 	}
 }
 
-type StartResponse struct {
+type PingResponse struct {
+	APIVersion string `json:"apiversion,omitempty"`
 	Color    string `json:"color,omitempty"`
-	HeadType string `json:"HeadType,omitempty"`
-	TailType string `json:"TailType,omitempty"`
+	HeadType string `json:"head,omitempty"`
+	TailType string `json:"tail,omitempty"`
 }
 
 func (s StartResponse) F() ln.F {

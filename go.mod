@@ -11,8 +11,7 @@ require (
 	github.com/prettymuchbryce/goeasystar v0.0.0-20150907235055-eebb5d406ac4
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/procfs v0.0.7 // indirect
-	golang.org/x/net v0.0.0-20191116160921-f9c825593386
-	golang.org/x/sys v0.0.0-20191115151921-52ab43148777 // indirect
+	golang.org/x/net v0.7.0
 	within.website/ln v0.7.0
 )
 
